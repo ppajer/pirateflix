@@ -1,27 +1,33 @@
 {
-  "name": "electron-and-chill",
-  "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "name": "PirateFlix",
+  "version": "0.0.1",
+  "description": "NetFlix for the masses!",
+  "author": {
+    "name": "Peter Pajer",
+    "email": "peter.p.pajer@gmail.com"
+  },
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-packager . pirateflix --platform win32 --arch x64 --out dist/",
+    "compile" : "electron-installer-windows --src dist/pirateflix-win32-x64 --dest dist/installers/"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron/electron-quick-start.git"
+    "url": "https://github.com/ppajer/pirateflix.git"
   },
   "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial"
+    "torrent",
+    "stream",
+    "desktop"
   ],
-  "homepage": "https://github.com/electron/electron-quick-start#readme",
+  "homepage": "https://github.com/ppajer/pirateflix#reamde",
   "dependencies" : {
     "peerflix": "0.35.1",
     "thepiratebay": "1.2.0",
     "imdb-api": "2.0.0",
-    "omdb": "0.7.0"
+    "omdb": "0.7.0",
+    "moviedb": "0.2.6"
   },
   "devDependencies": {
     "electron": "^1.3.4",

@@ -5,6 +5,8 @@
 const ThePirateBay 	= require('thepiratebay');
 const PeerFlix		= require('peerflix');
 const oMDB 			= require('omdb');
+const IMDB 			= require('imdb-api');
+const MovieDB 		= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
 
 var $searchForm 		= $('#main-search-form'),
 	$searchSubmit 		= $('#main-search-submit'),
@@ -21,12 +23,14 @@ var $searchForm 		= $('#main-search-form'),
 	$torrentsList 		= $('#torrents-list'),
 	$moviesList 		= $('#movies-list'),
 	$loadingSection 	= $('#loading'),
+	$loadingInfo		= $('#loading-info'),
 	movieToSearch;
 
 // Ugly code for a beautiful init
 setTimeout(function() {
 	$controlSection.addClass('active');
 	$homeSection.addClass('active');
+	$search.focus();
 }, 200);
 
 $searchForm.on('submit', function(e) {
@@ -39,13 +43,17 @@ $searchForm.on('submit', function(e) {
 	
 	setLoadingState(true);
 
-	oMDB.search(movieToSearch, {fullPlot: true}, function(err, response) {
+	oMDB.search(movieToSearch, function(err, response) {
 		if (err) {console.log(err);}
 
 		if (response.length > 1) {
 			buildMoviesList(response, $toClone.clone());	
 		} else {
-			displayMovieInfo(false, response);
+			IMDB.getReq({id: response[0].imdb}, function(err, res) {
+				if (err) console.log(err);
+
+				displayMovieInfo(false, res);
+			})
 		}
 	});
 
@@ -56,7 +64,7 @@ $searchTorrents.on('click', function(e) {
 	setLoadingState(true);
 
 	var $toClone = $('#torrents .torrent'),
-		toSearch = $(this).data('movietitle');
+		toSearch = $searchTorrents.attr('data-movietitle');
 
 	ThePirateBay.search(toSearch, {
 		category: 'video',
@@ -65,10 +73,37 @@ $searchTorrents.on('click', function(e) {
 		order: 'desc'
 	}).then(function(results) {
 		buildResultsList(results, $toClone.clone());
-	}).catch(function(err){console.log(err)});
-	
+	}).catch(function(err){
+		console.log('first try:',err);
+
+		$loadingInfo.html('There seems to be a problem with The Pirate Bay, retrying...');
+		setTimeout(function(){
+
+			ThePirateBay.search(toSearch, {
+				category: 'video',
+				page: 0,
+				orderBy: 'seeds',
+				order: 'desc'
+			}).then(function(results) {
+				buildResultsList(results, $toClone.clone());
+			}).catch(function(err){
+				console.log('retry:', err);
+
+				$loadingInfo.html('The server seems to be down, try again in a few!<br>Cancelling search...');
+				setTimeout(function(){
+					setLoadingState(false, $homeSection);
+					$loadingInfo.html('This may take a few seconds');
+				}, 2000);
+			});
+		}, 3000);
+	});
 });
 
+/*
+
+	HELPERS
+
+*/
 
 function setLoadingState(loading, $pageToLoad) {
 	if (loading) {
@@ -80,16 +115,134 @@ function setLoadingState(loading, $pageToLoad) {
 	}
 }
 
+function cloneAndFill($element, data, className) {
+	var $clone = $element.clone();
+
+	for (key in data) {
+		var selector = className+'-'+key;
+		$clone.find(selector).html(data[key]);
+	}
+
+	return $clone;
+}
+
+/*
+
+	MOVIE SELECT
+
+*/
+
 function buildMoviesList(movies, $toClone) {
 
 	$moviesList.empty();
 
 	for (var i = 0; i < movies.length; i++) {
-		$moviesList.append(fillMovieCard(movies[i], $toClone));
+
+		if (movies[i].imdb) {
+
+			IMDB.getReq({id: movies[i].imdb}, function(err, res) {
+				if (err) {console.log(err);}
+
+				$moviesList.append(fillMovieCard(res, $toClone));
+			})
+		}
 	}
 
 	setLoadingState(false, $moviesSection);
 }
+
+function fillMovieCard(movie, $cloneElement) {
+	if ((!movie.poster || movie.poster.indexOf('http') === -1) || !movie.title || !movie._year_data || !movie.plot) {
+		return;
+	}
+	var cloneData = {
+		'title' : movie.title,
+		'year' : movie._year_data
+	},
+	$clone = cloneAndFill($cloneElement, cloneData, '.movie');
+	$clone.find('.movie-poster').attr('src', movie.poster);
+	$clone.attr('data-imdbid', movie.imdbid);
+	$clone.on('click', function(e) {
+		displayMovieInfo($(this).attr('data-imdbid'));
+	});
+
+	return $clone;
+}
+
+/*
+
+	MOVIE INFO
+
+*/
+
+function displayMovieInfo(imdbid, movieData) {
+	var $movieInfo 	= $('#movie-info');
+
+	setLoadingState(true);
+
+	// We already have the data
+	if ((!imdbid) && movieData) {
+
+		fillMovieInfo($movieInfo, movieData);
+		setLoadingState(false, $movieInfoSection);
+
+	// We need to query the data
+	} else {
+		
+		IMDB.getReq({id: imdbid}, function(err, movie) {
+			if (err) {
+				console.log('error: ', err);
+				oMDB.get({imdb: imdbid}, {fullPlot: true}, function(err, res) {
+					if (err) console.log(err);
+					console.log('res:', res);
+					fillMovieInfo($movieInfo, res[0]);
+					setLoadingState(false, $movieInfoSection);
+				});
+			} else {
+				console.log('res:' ,movie)
+				fillMovieInfo($movieInfo, movie);
+				setLoadingState(false, $movieInfoSection);
+			}
+		});
+	}
+}
+
+function fillMovieInfo($movieInfo, movieData) {
+	console.log(movieData);
+	$movieInfo.find('.movie-title').html(movieData.title+'<small class="movie-year"></small>'); // hanging by a thread here
+	$movieInfo.find('.movie-year').html(movieData._year_data || movieData.year);
+	$movieInfo.find('.movie-genre').html(movieData.genres);
+	$movieInfo.find('.movie-director').html(movieData.director);
+	$movieInfo.find('.movie-writer').html(movieData.writer);
+	$movieInfo.find('.movie-actors').html(movieData.actors);
+	$movieInfo.find('.movie-plot').html(movieData.plot);
+	$movieInfo.find('.movie-runtime').html(movieData.runtime);
+	$movieInfo.find('.movie-rating').html(movieData.rating || movieData.imdb.rating);
+	$movieInfo.find('.movie-poster').attr('src', movieData.poster);
+	$searchTorrents.attr('data-movietitle', movieData.title);
+}
+
+/*
+	
+	SERIES INFO
+
+*/
+
+function displaySeriesInfo($seriesInfo, seriesData) {
+
+}
+
+function fillSeriesInfo($seriesInfo, seriesData) {
+
+}
+
+function displaySeasonInfo($seasonInfo, seasonData) {}
+
+/*
+
+	TORRENT SELECT
+
+*/
 
 function buildResultsList(results, $toClone) {
 
@@ -123,68 +276,11 @@ function fillResultsRow(result, $cloneElement) {
 	return $clone;
 }
 
-function fillMovieCard(movie, $cloneElement) {
-	var cloneData = {
-		'poster' : movie.poster,
-		'title' : movie.title,
-		'year' : movie.year
-	},
-	$clone = cloneAndFill($cloneElement, cloneData, '.movie');
-	$clone.data('imdbid', movie.imdbid);
-	$clone.on('click', function(e) {
-		displayMovieInfo($(this).data('imdbid'));
-	});
-}
+/*
 
-function cloneAndFill($element, data, className) {
-	var $clone = $element.clone();
+	STREAMING
 
-	for (key in data) {
-		var selector = className+'-'+key;
-		$clone.find(selector).html(data[key]);
-	}
-
-	return $clone;
-}
-
-function displayMovieInfo(imdbid, movieData) {
-	var $movieInfo 	= $('#movie-info');
-
-	console.log(imdbid, movieData);
-
-	setLoadingState(true);
-
-	// We already have the data
-	if ((!imdbid) && movieData) {
-
-		fillMovieInfo($movieInfo, movieData);
-		setLoadingState(false, $movieInfoSection);
-
-	// We need to query the data
-	} else {
-		
-		oMDB.search({imdb: imdbid}, {fullPlot: true}, function(err, movie) {
-			if (err) {console.log(err);}
-
-			fillMovieInfo($movieInfo, movie);
-			setLoadingState(false, $movieInfoSection);
-		});
-	}
-}
-
-function fillMovieInfo($movieInfo, movieData) {
-	$movieInfo.find('.movie-title').html(movieData.title+'<small class="movie-year"></small>'); // hanging by a thread here
-	$movieInfo.find('.movie-year').html(movieData.year);
-	$movieInfo.find('.movie-genre').html(movieData.genres);
-	$movieInfo.find('.movie-director').html(movieData.director);
-	$movieInfo.find('.movie-writer').html(movieData.writers);
-	$movieInfo.find('.movie-actors').html(movieData.actors);
-	$movieInfo.find('.movie-plot').html(movieData.plot);
-	$movieInfo.find('.movie-runtime').html(movieData.runtime);
-	$movieInfo.find('.movie-rating').html(movieData.imdb.rating);
-	$movieInfo.find('.movie-poster').attr('src', movieData.poster);
-	$searchTorrents.data('movietitle', movieData.title+' '+movieData.year);
-}
+*/
 
 function streamResult(magnetLink) {
 
