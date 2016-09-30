@@ -126,31 +126,83 @@ section {
 	}
 }
 
-#movie-info {
+#movie-info,
+#series-info {
 
 	.container-fluid {
 		padding-left: 0;
 	}
 
-	.movie-poster {
+	.movie-poster,
+	.series-poster {
 		width: 100%;
 		display: block;
 	}
 
-	.movie-title {
+	.movie-title,
+	.series-title {
 		font-size: 4em;
 		max-width: 70%;
 
-		.movie-year {
+		.movie-year,
+		.series-year {
 			display: block;
 			margin: 0.3em 0;
 		}
 	}
 
-	.movie-info-text {
+	.movie-info-text,
+	.series-info-text {
 		font-family: 'Roboto Mono';
 		margin: 0;
 		margin-top: 0.3em;
+	}
+
+	.series-plot {
+		max-height: 15vh;
+		overflow-y:scroll;
+		width: 107%;
+		padding-right: 3em;
+	}
+
+	#series-seasons {
+
+		height: 30vh;
+		overflow-y:scroll;
+		width: 110%;
+
+		.series-season {
+			float: left;
+			position: relative;
+			width: 10vw;
+			min-width: 150px;
+			height: 25vh;
+			min-height: 240px;
+			overflow: hidden;
+			margin-left: 6px;
+			margin-bottom: 6px;
+			cursor: pointer;
+
+			.season-poster {
+				display: block;
+				width: 100%;
+			}
+
+			.season-description-box {
+				position: absolute;
+				top: 0;
+				left: 0;
+				height: 100%;
+				width: 100%;
+				background: rgba(#fff, 0.6);
+				opacity: 0;
+				@include prefix(transition, all .3s);
+
+				&:hover {
+					opacity: 1;
+				}
+			}
+		}
 	}
 }
 
@@ -166,15 +218,24 @@ section {
 
 #movies {
 
+	#movies-list {
+		overflow-y: scroll;
+		height: 90vh;
+		width: 110%;
+	}
+
 	.movie {
 
 		float: left;
 		position: relative;
-		width:220px;
-		height: 320px;
+		width:19vw;
+		min-width:240px;
+		height: 50vh;
+		min-height: 360px;
 		overflow: hidden;
 		margin-left: 10px;
 		margin-bottom: 10px;
+		cursor: pointer;
 		-webkit-animation: fadeIn 0.6s;
 
 		.movie-poster {
