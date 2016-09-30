@@ -4,8 +4,6 @@
 
 const ThePirateBay 	= require('thepiratebay');
 const PeerFlix		= require('peerflix');
-const oMDB 			= require('omdb');
-const IMDB 			= require('imdb-api');
 const MovieDB 		= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
 
 const smallImageBaseUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
