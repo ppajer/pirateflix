@@ -127,38 +127,44 @@ section {
 }
 
 #movie-info,
-#series-info {
+#series-info,
+#season-info {
 
 	.container-fluid {
 		padding-left: 0;
 	}
 
 	.movie-poster,
-	.series-poster {
+	.series-poster,
+	.season-poster {
 		width: 100%;
 		display: block;
 	}
 
 	.movie-title,
-	.series-title {
+	.series-title,
+	.season-title-big {
 		font-size: 4em;
 		max-width: 70%;
 
 		.movie-year,
-		.series-year {
+		.series-year,
+		.season-year {
 			display: block;
 			margin: 0.3em 0;
 		}
 	}
 
 	.movie-info-text,
-	.series-info-text {
+	.series-info-text,
+	.season-info-text {
 		font-family: 'Roboto Mono';
 		margin: 0;
 		margin-top: 0.3em;
 	}
 
-	.series-plot {
+	.series-plot,
+	.season-plot {
 		max-height: 15vh;
 		overflow-y:scroll;
 		width: 107%;
@@ -203,6 +209,12 @@ section {
 				}
 			}
 		}
+	}
+
+	#season-episodes {
+		max-height: 70vh;
+		overflow-y:scroll;
+		width: 107%;
 	}
 }
 

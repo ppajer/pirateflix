@@ -2,9 +2,10 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const ThePirateBay 	= require('thepiratebay');
-const PeerFlix		= require('peerflix');
-const MovieDB 		= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
+const ThePirateBay 		= require('thepiratebay');
+const PeerFlix			= require('peerflix');
+const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
+const MediaController 	= require('./media-controls.js');
 
 const smallImageBaseUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
 const largeImageBaseUrl = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2';
@@ -121,7 +122,6 @@ function fillCard($cloneElement, name, year, id, poster, selector, onclick) {
 	$clone.on('click', function(e) {
 		onclick($(this).attr('data-id'));
 	});
-	console.log($clone);
 	return $clone;
 }
 
@@ -148,6 +148,12 @@ function getMediaCredits(credits) {
 	};
 
 	return creditsList;
+}
+
+function pad(num, size) {
+    var s = num+"";
+    while (s.length < size) s = "0" + s;
+    return s;
 }
 
 /*
@@ -305,31 +311,36 @@ function displaySeasonInfo(seriesName, id, number) {
 }
 
 function fillSeasonInfo(seasonData, seriesName) {
-	$seasonInfoSection.find('.season-title').html('Season '+seasonData.season_number+': '+seasonData.name+'<small class="season-year"></small>');
+	var $episodesList 	= $seasonInfoSection.find('#season-episodes'),
+		$toClone 		= $episodesList.find('.season-episode').clone();
+	console.log(seasonData)
+	$seasonInfoSection.find('.season-title-big').html(seasonData.name+'<small class="season-year"></small>');
 	$seasonInfoSection.find('.season-year').html(seasonData.air_date ? seasonData.air_date.split('-')[0] : '');
 	$seasonInfoSection.find('.season-poster').attr('src', largeImageBaseUrl+seasonData.poster_path);
-	seasonData.episodes.forEach(function(episode) {
-		$seasonInfoSection.find('#season-episodes').append(fillEpisodeCard(episode, seasonData.season_number, seriesName));
-	});
+	$episodesList.empty();
+	for (var i = 0; i < seasonData.episodes.length; i++) {
+		
+		$episodesList.append(fillEpisodeCard($toClone, seasonData.episodes[i], seasonData.season_number, seriesName));
+	};
 }
 
-function fillEpisodeCard(episodeData, seasonNumber, seriesName) {
-	var $toClone = $seasonInfoSection.find('.season-episode').clone(),
-		cloneData = {
+function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
+	var cloneData = {
 			'number': episodeData.episode_number,
-			'name': episodeData.name,
-			'overview': episodeData.overview
+			'title': episodeData.name,
+			'plot': episodeData.overview
 		},
 		$clone = cloneAndFill($toClone, cloneData, '.episode');
 
-	$clone.find('.episode-play').attr('data-search', seriesName+' S'+seasonNumber+'E'+episodeData.episode_number);
-	$clone.on('click', function(e) {
+	$clone.find('.episode-play').attr('data-search', seriesName+' S'+pad(seasonNumber, 2)+'E'+pad(episodeData.episode_number, 2));
+	$clone.find('.episode-play').on('click', function(e) {
 		setLoadingState(true);
 
-		var $toClone = $('#torrents .torrent');
-
-		searchTorrents($(this).attr('data-search')).then(function(results) {
-			buildResultsList(results);
+		var $toClone = $('#torrents .torrent').first(),
+			toSearch = $(this).attr('data-search');
+			console.log(toSearch);
+		searchTorrents(toSearch).then(function(results) {
+			buildResultsList(results, $toClone.clone());
 		}).catch(function(err){
 			console.log('first try:',err);
 
@@ -420,5 +431,7 @@ function streamResult(magnetLink) {
 		var mediaUrl = 'http://localhost:'+streamServer.address().port+'/';
 
 		$mediaPlayer.attr('src', mediaUrl);
+		$mediaPlayer.focus();
+		MediaController.getController($mediaPlayer[0]);
 	})
 }
