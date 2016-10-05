@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>PirateFlix</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:300,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:300,400,700&subset=latin-ext" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,700" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/style.css">
     <script type="text/javascript" src="../assets/js/jquery.min.js" onload="window.$ = window.jQuery = module.exports;"></script>
@@ -27,7 +28,6 @@
     <section id="home">
       <div class="container-fluid">
         <div class="row">
-          <h1>Welcome to PirateFlix</h1>
           <form id="main-search-form">
             <input type="text" id="main-search" placeholder="What would you like to watch?">
             <button id="main-search-submit"><i class="glyphicon glyphicon-chevron-right"></i></button>
@@ -197,6 +197,70 @@
       <video autoplay preload="true" controls id="mediaPlayer"></video>
     </section>
 
+    <section id="next-episode">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12">
+            <h1 class="next-episode-heading">
+              <small class="next-episode-legend">
+                up next:
+              </small>
+              <span id="next-episode-title">
+              </span>
+            </h1>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-7">&nbsp;</div>
+          <div class="col-xs-5">
+            <div class="row">
+              <div class="col-xs-4">
+                <span class="next-episode-starting-in">
+                  starting in:
+                </span>
+              </div>
+              <div class="col-xs-4">
+                <span id="next-episode-counter"></span>
+              </div>
+              <div class="col-xs-4">
+                <span class="next-episode-seconds">
+                  seconds
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container-fluid slide-down" id="next-episode-more">
+        <div class="row next-episode-more-header">
+          <div class="col-xs-4">
+            <p class="next-episode-more-text">
+              This is not what I want!
+              <span class="next-episode-show-alternatives">
+                Show alternatives
+              </span>
+            </p>
+          </div>
+          <div class="col-xs-4">
+            <button class="control-btn" id="next-episode-show-alternatives-btn">
+              <i class="glyphicon glyphicon-chevron-down"></i>
+            </button>
+          </div>
+        </div>
+        <div class="row next-episode-alternatives">
+          torr1
+          <br>
+          torr2
+          <br>
+          torr3
+        </div>
+        <div class="row next-episode-search">
+          <input type="submit" class="glyphicon glyphicon-search control-btn">
+          <input type="text">
+        </div>
+      </div>
+    </section>
+
     <section id="loading">
       <h1><i class="glyphicon glyphicon-console"></i> Loading...</h1>
       <br>
@@ -204,8 +268,6 @@
     </section>
   </body>
   <script>
-    //require('../assets/js/jquery.min.js');
-    //require('../assets/js/bootstrap.min.js');
     require('../assets/js/renderer.js');
     require('../assets/js/window-controls.js');
   </script>

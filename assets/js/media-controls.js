@@ -1,22 +1,33 @@
 const ElectronRemote = require('electron').remote;
 
-function MediaController(player) {
+function MediaController(player, customBindings) {
 
-	this.player 	= player;
-	this.keyCodes 	= {
-		spacebar	: 32,
-		leftArrow	: 37,
-		upArrow		: 38,
-		rightArrow	: 39,
-		downArrow	: 40,
-		escape		: 27
-	};
-	this.isPlaying = !this.player.paused;	
+	this.keyCodes = {
+			spacebar	: 32,
+			leftArrow	: 37,
+			upArrow		: 38,
+			rightArrow	: 39,
+			downArrow	: 40,
+			escape		: 27
+		};
+
+	this.init = function(player, customBindings) {
+		this.player 		= player;
+		this.customBindings = customBindings || [];
+		this.isPlaying 		= !this.player.paused;
+		this.addEventHandlers(this);
+	}
 
 	this.addEventHandlers = function(handler) {
 		handler.player.addEventListener('playing', handler.setPlayingFlag.bind(handler));
 		handler.player.addEventListener('ended', handler.unsetPlayingFlag.bind(handler));
 		document.addEventListener('keydown', handler.handleKeyDown.bind(handler));	
+	}
+
+	this.doActionIfBound = function(keycode) {
+		for (var i = 0; i < this.customBindings.length; i++) {
+			if (this.customBindings[i].key === keycode) this.customBindings[i].action.call().bind(this);
+		};
 	}
 
 	this.handleKeyDown = function(e) {
@@ -40,6 +51,7 @@ function MediaController(player) {
 				this.changeVolume(0.05);
 				break;
 			default:
+				this.doActionIfBound(e.which);
 			break;
 		}
 	}
@@ -78,9 +90,9 @@ function MediaController(player) {
 		this.player.currentTime = this.player.currentTime + diff;
 	}
 
-	this.addEventHandlers(this);
+	this.init(player, customBindings);
 }
 
-module.exports.getController = function(player) {
-	return new MediaController(player);
+module.exports.getController = function(player, customBindings) {
+	return new MediaController(player, customBindings);
 }

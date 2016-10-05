@@ -128,9 +128,37 @@ function fillCard($cloneElement, name, year, id, poster, selector, onclick) {
 function getMediaGenres(genres) {
 	var genreList = [];
 	genres.forEach(function(genre) {
-		genreList.push(genre.name);
+		genreList.push({name: genre.name, id: genre.id});
 	});
 	return genreList;
+}
+
+function listMediaGenres(genres) {
+	var $genreList 	= $('<div class="genre-list">'),
+		genreObjs 	= getMediaGenres(genres);
+
+	for (var i = 0; i < genreObjs.length; i++) {
+		var $item = $('<span class="genre-item">');
+		
+		$item.attr('data-genreid', genreObjs[i].id);
+		$item.text(genreObjs[i].name);
+		$item.on('click', function(e) {
+			var genreId = $(this).attr('data-genreid');
+			setLoadingState(true);
+			MovieDB.genreMovies({id: genreId}, function(err, res) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log(res);
+					buildMediaList(res.results, $('#movies .movie').first().clone(), 'movie');
+				};
+			})
+		})
+
+		$genreList.append($item);
+	};
+
+	return $genreList;
 }
 
 function getMediaCredits(credits) {
@@ -162,15 +190,15 @@ function pad(num, size) {
 
 */
 
-function buildMediaList(media, $toClone) {
+function buildMediaList(media, $toClone, forceType) {
 
 	$moviesList.empty();
 
 	for (var i = 0; i < media.length; i++) {
 
-		if (media[i].media_type === 'movie') {
+		if ((media[i].media_type === 'movie') || (forceType === 'movie')) {
 			$moviesList.append(fillMovieCard(media[i], $toClone));
-		} else if (media[i].media_type === "tv") {
+		} else if ((media[i].media_type === "tv") || (forceType === 'tv')) {
 			$moviesList.append(fillSeriesCard(media[i], $toClone));
 		} 
 	}
@@ -215,12 +243,12 @@ function displayMovieInfo(id) {
 }
 
 function fillMovieInfo(movieData, creditsData) {
-	var genres 	= getMediaGenres(movieData.genres),
+	var genres 	= listMediaGenres(movieData.genres),
 		credits = getMediaCredits(creditsData);
 
 	$movieInfoSection.find('.movie-title').html(movieData.title+'<small class="movie-year"></small>'); // hanging by a thread here
 	$movieInfoSection.find('.movie-year').html(movieData.release_date.split('-')[0]);
-	$movieInfoSection.find('.movie-genre').html(genres.join(', '));
+	$movieInfoSection.find('.movie-genre').html(genres);
 	$movieInfoSection.find('.movie-director').html(credits.director.join(', '));
 	$movieInfoSection.find('.movie-writer').html(credits.writer.join(', '));
 	$movieInfoSection.find('.movie-actors').html(credits.cast.join(', '));
@@ -257,13 +285,14 @@ function displaySeriesInfo(id) {
 }
 
 function fillSeriesInfo(seriesData, creditsData) {
-	var genres 		= getMediaGenres(seriesData.genres),
+	var genres 		= listMediaGenres(seriesData.genres),
 		credits 	= getMediaCredits(creditsData),
 		$toClone 	= $seriesInfoSection.find('.series-season').clone();
+
 	$seriesInfoSection.find('#series-seasons').empty();
 	$seriesInfoSection.find('.series-title').html(seriesData.name+'<small class="series-year"></small>'); // hanging by a thread here
 	$seriesInfoSection.find('.series-year').html(seriesData.first_air_date.split('-')[0]);
-	$seriesInfoSection.find('.series-genre').html(genres.join(', '));
+	$seriesInfoSection.find('.series-genre').html(genres);
 	$seriesInfoSection.find('.series-director').html(credits.director.join(', '));
 	$seriesInfoSection.find('.series-writer').html(credits.writer.join(', '));
 	$seriesInfoSection.find('.series-actors').html(credits.cast.join(', '));
@@ -407,7 +436,7 @@ function fillResultsRow(result, $cloneElement) {
 	// Set event handler for torrent
 	$play.on('click', function(e) {
 		setLoadingState(true);
-		streamResult($(this).data('magnet'));
+		streamResult($(this).data('magnet'), $(this).parent().parent().find('.torrent-name').text()); //something more elegant? Please
 	});
 
 	return $clone;
@@ -419,7 +448,7 @@ function fillResultsRow(result, $cloneElement) {
 
 */
 
-function streamResult(magnetLink) {
+function streamResult(magnetLink, torrentName) {
 
 	var torrentStream 	= PeerFlix(magnetLink),
 		streamServer 	= torrentStream.server;
@@ -434,4 +463,8 @@ function streamResult(magnetLink) {
 		$mediaPlayer.focus();
 		MediaController.getController($mediaPlayer[0]);
 	})
+}
+
+function awaitNextEpisode() {
+	
 }

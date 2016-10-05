@@ -5,3 +5,12 @@
 	#{'-o-'+$property}: $value;
 	#{$property}: $value;
 }
+
+@mixin line($button-size, $color, $transition) {
+  display: inline-block;
+  width: $button-size;
+  height: $button-size/7;
+  background: $color;
+  border-radius: $button-size/14; 
+  transition: $transition;
+}
