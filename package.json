@@ -6,11 +6,12 @@
     "name": "Peter Pajer",
     "email": "peter.p.pajer@gmail.com"
   },
+  "license" : "See license in LICENSE.md",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-packager . pirateflix --platform win32 --arch x64 --out dist/",
-    "compile" : "electron-installer-windows --src dist/pirateflix-win32-x64 --dest dist/installers/"
+    "compile" : "electron-installer-windows --src dist/pirateflix-win32-x64 --dest dist/bin/"
   },
   "repository": {
     "type": "git",
