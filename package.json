@@ -10,7 +10,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . pirateflix --platform win32 --arch x64 --out dist/",
+    "build": "electron-packager . pirateflix --platform win32 --arch x64 --out dist/ --asar=true",
     "compile" : "electron-installer-windows --src dist/pirateflix-win32-x64 --dest dist/bin/"
   },
   "repository": {
