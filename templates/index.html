@@ -32,6 +32,15 @@
             <input type="text" id="main-search" placeholder="What would you like to watch?">
             <button id="main-search-submit"><i class="glyphicon glyphicon-chevron-right"></i></button>
           </form>
+          <div id="main-search-alternatives">
+            <button class="control-btn" id="top-rated-movies">Show me the most popular movies <i class="glyphicon glyphicon-chevron-right"></i></button>
+            <button class="control-btn" id="latest-movies">Show me the latest movies <i class="glyphicon glyphicon-chevron-right"></i> 
+              <small class="warning"><i class="glyphicon glyphicon-warning-sign"></i> Torrents may be unavailable</small>
+            </button>
+            <button class="control-btn" id="random-movie">Show me a random movie <i class="glyphicon glyphicon-chevron-right"></i>
+              <small class="warning"><i class="glyphicon glyphicon-warning-sign"></i> Like, sometimes <i>really</i> random</small>
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -40,6 +49,9 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-xs-12">
+            <button class="control-btn back-btn" title="Back">
+              <i class="glyphicon glyphicon-chevron-left"></i>
+            </button>
             <h1>Choose your movie</h1>
           </div>
         </div>
@@ -66,7 +78,16 @@
             <img src="" class="movie-poster">
           </div>
           <div class="col-xs-7">
-            <h1 class="movie-title"></h1>
+            <div class="row">
+              <div class="col-xs-3"></div>
+            </div>
+            <h1 class="movie-heading">
+              <button class="control-btn back-btn" title="Back">
+                <i class="glyphicon glyphicon-chevron-left"></i>
+              </button>
+              <span class="movie-title"></span>
+              <small class="movie-year"></small>
+            </h1>
             <hr>
             <p class="movie-info-text">Director: <span class="movie-director"></span></p>
             <p class="movie-info-text">Writer: <span class="movie-writer"></span></p>
@@ -88,7 +109,13 @@
             <img src="" class="series-poster">
           </div>
           <div class="col-xs-7">
-            <h1 class="series-title"></h1>
+            <h1 class="series-heading">
+              <button class="control-btn back-btn" title="Back">
+                <i class="glyphicon glyphicon-chevron-left"></i>
+              </button>
+              <span class="series-title"></span>
+              <small class="series-year"></small>
+            </h1>
             <hr>
             <p class="series-info-text">Director: <span class="series-director"></span></p>
             <p class="series-info-text">Writer: <span class="series-writer"></span></p>
@@ -119,9 +146,13 @@
             <img src="" class="season-poster">
           </div>
           <div class="col-xs-7">
-            <h1 class="season-title-big"></h1>
-            <hr>
-            <p class="season-info-text season-overview"></p>
+            <h1 class="season-heading">
+              <button class="control-btn back-btn" title="Back">
+                <i class="glyphicon glyphicon-chevron-left"></i>
+              </button>
+              <span class="season-title"></span>
+              <small class="season-year"></small>
+            </h1>
             <hr>
             <h3>Episodes</h3>
             <div id="season-episodes" class="container-fluid">
@@ -153,6 +184,9 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-xs-12">
+            <button class="control-btn back-btn" title="Back">
+              <i class="glyphicon glyphicon-chevron-left"></i>
+            </button>
             <h1>Choose your torrent</h1>
           </div>
         </div>

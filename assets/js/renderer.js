@@ -13,6 +13,9 @@ const largeImageBaseUrl = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2';
 var $searchForm 		= $('#main-search-form'),
 	$searchSubmit 		= $('#main-search-submit'),
 	$search 			= $('#main-search'),
+	$top 				= $('#top-rated-movies'),
+	$latest 			= $('#latest-movies'),
+	$random 			= $('#random-movie'),
 	$sections			= $('section'),
 	$controlSection 	= $('#controls'),
 	$homeSection		= $('#home'),
@@ -36,6 +39,8 @@ setTimeout(function() {
 	$search.focus();
 }, 200);
 
+/***************** HOME ***********************/
+
 $searchForm.on('submit', function(e) {
 	e.preventDefault();
 
@@ -48,10 +53,16 @@ $searchForm.on('submit', function(e) {
 		if (err) {
 			console.log(err);
 		} else{
-			buildMediaList(res.results, $toClone.first().clone());
+			buildMediaList(res.results, $toClone.first().clone(), false, 'Results for "'+movieToSearch+'"', $homeSection);
 		};
 	})
 });
+
+$random.on('click', getRandomMovie);
+$top.on('click', getTopMovies);
+$latest.on('click', getLatestMovies);
+
+/******************* MEDIA INFO *******************/
 
 $searchTorrents.on('click', function(e) {
 
@@ -61,7 +72,7 @@ $searchTorrents.on('click', function(e) {
 		toSearch = $searchTorrents.attr('data-movietitle');
 
 	searchTorrents(toSearch).then(function(results) {
-		buildResultsList(results, $toClone.first().clone());
+		buildResultsList(results, $toClone.first().clone(), $movieInfoSection);
 	}).catch(function(err){
 		console.log('first try:',err);
 
@@ -69,7 +80,7 @@ $searchTorrents.on('click', function(e) {
 		setTimeout(function(){
 
 			searchTorrents(toSearch).then(function(results) {
-				buildResultsList(results, $toClone.first().clone());
+				buildResultsList(results, $toClone.first().clone(), $movieInfoSection);
 			}).catch(function(err){
 				console.log('retry:', err);
 
@@ -110,7 +121,7 @@ function cloneAndFill($element, data, className) {
 	return $clone;
 }
 
-function fillCard($cloneElement, name, year, id, poster, selector, onclick) {
+function fillCard($cloneElement, name, year, id, poster, selector, onclick, returnPage) {
 	if (parseInt(year) > new Date().getFullYear()) return;
 	var cloneData = {
 		'title': name,
@@ -120,7 +131,7 @@ function fillCard($cloneElement, name, year, id, poster, selector, onclick) {
 	$clone.find(selector+'-poster').attr('src', smallImageBaseUrl+poster);
 	$clone.attr('data-id', id);
 	$clone.on('click', function(e) {
-		onclick($(this).attr('data-id'));
+		onclick($(this).attr('data-id'), returnPage);
 	});
 	return $clone;
 }
@@ -167,13 +178,17 @@ function getMediaCredits(credits) {
 		'writer': [],
 		'cast': []
 	};
-	credits.crew.forEach(function(c){
-		if (c.job === 'Director') creditsList.director.push(c.name);
-		if (c.job === 'Writer') creditsList.writer.push(c.name);
-	});
-	for (var i = 0; i < 5; i++) {
-		if (credits.cast[i].name) creditsList.cast.push(credits.cast[i].name);
-	};
+	if (credits.crew.length) {
+		credits.crew.forEach(function(c){
+			if (c.job === 'Director') creditsList.director.push(c.name);
+			if (c.job === 'Writer') creditsList.writer.push(c.name);
+		});
+	}
+	if (credits.cast.length) {
+		for (var i = 0; i < 5; i++) {
+			if (credits.cast[i] && credits.cast[i].name) creditsList.cast.push(credits.cast[i].name);
+		};
+	}
 
 	return creditsList;
 }
@@ -184,36 +199,100 @@ function pad(num, size) {
     return s;
 }
 
+function jumpToPage($page) {
+	$('.active').not('#controls').removeClass('active');
+	setLoadingState(false, $page);
+}
+
+function bindReturnPage($btn, $page) {
+	var $page = $page ? $page : $homeSection;
+	$btn.off('click');
+	$btn.on('click', function(e) {
+		jumpToPage($page);
+	});
+}
+
+function setPageTitle($page, title) {
+	$page.find('h1').text(title);
+}
+
+/*
+
+	LISTINGS
+
+*/
+
+function getRandomMovie() {
+	var randomId;
+	setLoadingState(true);
+	// FYI: in case you ever want to extend, real max for series ids is 48988 (+1)
+	randomId = Math.round(Math.random() * (419770 - 1) + 1); //max incremented to include real max.
+	console.log(randomId)
+	while (!displayMovieInfo(randomId, $homeSection, true)) {
+		//recalc and hope for the best
+		randomId = Math.round(Math.random() * (419770 - 1) + 1);
+	}
+}
+
+function getTopMovies() {
+	setLoadingState(true);
+	MovieDB.miscPopularMovies(function(err, res) {
+		if (err) {
+			console.log(err);
+		} else {
+			console.log(res);
+			buildMediaList(res.results, $('#movies .movie').first().clone(), 'movie', 'Most Popular Movies', $homeSection);
+		}
+	})
+}
+
+function getLatestMovies() {
+	setLoadingState(true);
+	MovieDB.miscNowPlayingMovies(function(err, res) {
+		if (err) {
+			console.log(err);
+		} else {
+			console.log(res);
+			buildMediaList(res.results, $('#movies .movie').first().clone(), 'movie', 'Latest Movies', $homeSection);
+		}
+	})
+}
+
 /*
 
 	MOVIE SELECT
 
 */
 
-function buildMediaList(media, $toClone, forceType) {
+function buildMediaList(media, $toClone, forceType, title, returnPage) {
+
+	var title = title ? title : 'Choose media';
 
 	$moviesList.empty();
 
 	for (var i = 0; i < media.length; i++) {
 
 		if ((media[i].media_type === 'movie') || (forceType === 'movie')) {
-			$moviesList.append(fillMovieCard(media[i], $toClone));
+			$moviesList.append(fillMovieCard(media[i], $toClone, $moviesSection));
 		} else if ((media[i].media_type === "tv") || (forceType === 'tv')) {
-			$moviesList.append(fillSeriesCard(media[i], $toClone));
+			$moviesList.append(fillSeriesCard(media[i], $toClone, $moviesSection));
 		} 
 	}
+
+	setPageTitle($moviesSection, title);
+	bindReturnPage($moviesSection.find('.back-btn'), returnPage);
 
 	setLoadingState(false, $moviesSection);
 }
 
-function fillMovieCard(movie, $cloneElement) {
+function fillMovieCard(movie, $cloneElement, returnPage) {
 	if (!movie.poster_path || (movie.poster_path === null)) return;
-	return fillCard($cloneElement, movie.title, movie.release_date.split('-')[0], movie.id, movie.poster_path, '.movie', displayMovieInfo);
+	return fillCard($cloneElement, movie.title, movie.release_date.split('-')[0], movie.id, movie.poster_path, '.movie', displayMovieInfo, returnPage);
 }
 
-function fillSeriesCard(series, $cloneElement) {
+function fillSeriesCard(series, $cloneElement, returnPage) {
 	if (!series.poster_path || (series.poster_path === null)) return;
-	return fillCard($cloneElement, series.name, series.first_air_date.split('-')[0], series.id, series.poster_path, '.movie', displaySeriesInfo);
+	return fillCard($cloneElement, series.name, series.first_air_date.split('-')[0], series.id, series.poster_path, '.movie', displaySeriesInfo, returnPage);
 }
 
 /*
@@ -222,31 +301,43 @@ function fillSeriesCard(series, $cloneElement) {
 
 */
 
-function displayMovieInfo(id) {
+function displayMovieInfo(id, returnPage, randomId) {
+	var failed = false,
+		random = randomId ? randomId : false;
 
 	setLoadingState(true);
 	MovieDB.movieInfo({id: id}, function(err, movie) {
 		if (err) {
 			console.log(err);
+			failed = true;
+			if (random) {
+				$random.trigger('click');
+			};
 		} else {
 
 			MovieDB.movieCredits({id: movie.id}, function(err, credits) {
 				if (err) {
 					console.log(err);
+					failed = true;
 				} else {
-					fillMovieInfo(movie, credits);
+					fillMovieInfo(movie, credits, returnPage);
 					setLoadingState(false, $movieInfoSection);
 				}
 			})
 		}
 	});
+
+	return !failed;
 }
 
-function fillMovieInfo(movieData, creditsData) {
-	var genres 	= listMediaGenres(movieData.genres),
-		credits = getMediaCredits(creditsData);
+function fillMovieInfo(movieData, creditsData, returnPage) {
+	var genres 		= listMediaGenres(movieData.genres),
+		credits 	= getMediaCredits(creditsData),
+		$returnBtn 	= $movieInfoSection.find('.back-btn');
 
-	$movieInfoSection.find('.movie-title').html(movieData.title+'<small class="movie-year"></small>'); // hanging by a thread here
+	bindReturnPage($returnBtn, returnPage);
+
+	$movieInfoSection.find('.movie-title').html(movieData.title);
 	$movieInfoSection.find('.movie-year').html(movieData.release_date.split('-')[0]);
 	$movieInfoSection.find('.movie-genre').html(genres);
 	$movieInfoSection.find('.movie-director').html(credits.director.join(', '));
@@ -265,7 +356,7 @@ function fillMovieInfo(movieData, creditsData) {
 
 */
 
-function displaySeriesInfo(id) {
+function displaySeriesInfo(id, returnPage) {
 
 	setLoadingState(true);
 	MovieDB.tvInfo({id: id}, function(err, series) {
@@ -276,7 +367,7 @@ function displaySeriesInfo(id) {
 				if (err) {
 					console.log(err);
 				} else {
-					fillSeriesInfo(series, credits);
+					fillSeriesInfo(series, credits, returnPage);
 					setLoadingState(false, $seriesInfoSection);
 				};
 			})
@@ -284,13 +375,15 @@ function displaySeriesInfo(id) {
 	})
 }
 
-function fillSeriesInfo(seriesData, creditsData) {
+function fillSeriesInfo(seriesData, creditsData, returnPage) {
 	var genres 		= listMediaGenres(seriesData.genres),
 		credits 	= getMediaCredits(creditsData),
-		$toClone 	= $seriesInfoSection.find('.series-season').clone();
+		$toClone 	= $seriesInfoSection.find('.series-season').first().clone();
+
+	bindReturnPage($seriesInfoSection.find('.back-btn'), returnPage);
 
 	$seriesInfoSection.find('#series-seasons').empty();
-	$seriesInfoSection.find('.series-title').html(seriesData.name+'<small class="series-year"></small>'); // hanging by a thread here
+	$seriesInfoSection.find('.series-title').html(seriesData.name);
 	$seriesInfoSection.find('.series-year').html(seriesData.first_air_date.split('-')[0]);
 	$seriesInfoSection.find('.series-genre').html(genres);
 	$seriesInfoSection.find('.series-director').html(credits.director.join(', '));
@@ -300,22 +393,23 @@ function fillSeriesInfo(seriesData, creditsData) {
 	$seriesInfoSection.find('.series-rating').html(seriesData.vote_average);
 	$seriesInfoSection.find('.series-poster').attr('src', largeImageBaseUrl+seriesData.poster_path);
 	seriesData.seasons.forEach(function(season) {
-		$seriesInfoSection.find('#series-seasons').append(fillSeasonCard(seriesData.name, seriesData.id, season, $toClone));
+		$seriesInfoSection.find('#series-seasons').append(fillSeasonCard(seriesData.name, seriesData.id, season, $toClone, $seriesInfoSection));
 	})
 }
 
-function fillSeasonCard(series, seriesId, season, $cloneElement) {
+function fillSeasonCard(series, seriesId, season, $cloneElement, returnPage) {
 	var cloneData = {
 			'title': 'Season '+season.season_number,
 			'year': season.air_date ? season.air_date.split('-')[0] : '',
 		},
 		$clone = cloneAndFill($cloneElement.clone(), cloneData, '.season');
+
 	$clone.find('.season-poster').attr('src', smallImageBaseUrl+season.poster_path);
 	$clone.attr('data-seriesid', seriesId);
 	$clone.attr('data-seasonnumber', season.season_number);
 	$clone.attr('data-series', series);
 	$clone.on('click', function(e) {
-		displaySeasonInfo($(this).attr('data-series'), $(this).attr('data-seriesid'), $(this).attr('data-seasonnumber'));
+		displaySeasonInfo($(this).attr('data-series'), $(this).attr('data-seriesid'), $(this).attr('data-seasonnumber'), returnPage);
 	});
 	return $clone;
 }
@@ -326,24 +420,25 @@ function fillSeasonCard(series, seriesId, season, $cloneElement) {
 
 */
 
-function displaySeasonInfo(seriesName, id, number) {
+function displaySeasonInfo(seriesName, id, number, returnPage) {
 	setLoadingState(true);
-
 	MovieDB.tvSeasonInfo({id:id, season_number: number}, function(err, season) {
 		if (err) {
 			console.log(err);
 		} else {
-			fillSeasonInfo(season, seriesName);
+			fillSeasonInfo(season, seriesName, returnPage);
 			setLoadingState(false, $seasonInfoSection);
 		};
 	})
 }
 
-function fillSeasonInfo(seasonData, seriesName) {
+function fillSeasonInfo(seasonData, seriesName, returnPage) {
 	var $episodesList 	= $seasonInfoSection.find('#season-episodes'),
-		$toClone 		= $episodesList.find('.season-episode').clone();
-	console.log(seasonData)
-	$seasonInfoSection.find('.season-title-big').html(seasonData.name+'<small class="season-year"></small>');
+		$toClone 		= $episodesList.find('.season-episode').first().clone();
+	
+	bindReturnPage($seasonInfoSection.find('.back-btn'), returnPage);
+
+	$seasonInfoSection.find('.season-title').html(seasonData.name);
 	$seasonInfoSection.find('.season-year').html(seasonData.air_date ? seasonData.air_date.split('-')[0] : '');
 	$seasonInfoSection.find('.season-poster').attr('src', largeImageBaseUrl+seasonData.poster_path);
 	$episodesList.empty();
@@ -369,7 +464,7 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 			toSearch = $(this).attr('data-search');
 			console.log(toSearch);
 		searchTorrents(toSearch).then(function(results) {
-			buildResultsList(results, $toClone.clone());
+			buildResultsList(results, $toClone.clone(), $seasonInfoSection);
 		}).catch(function(err){
 			console.log('first try:',err);
 
@@ -377,7 +472,7 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 			setTimeout(function(){
 
 				searchTorrents(toSearch).then(function(results) {
-					buildResultsList(results, $toClone.clone());
+					buildResultsList(results, $toClone.clone(), $seasonInfoSection);
 				}).catch(function(err){
 					console.log('retry:', err);
 
@@ -410,12 +505,24 @@ function searchTorrents(toSearch) {
 	})
 }
 
-function buildResultsList(results, $toClone) {
+function buildResultsList(results, $toClone, returnPage) {
+	
+	var displayLength = 10,
+		loopLength;
 
 	$torrentsList.empty();
+	$torrentSection.find('.torrent-header').show();
 
-	for (var i = 0; i < 10; i++) {
-		$torrentsList.append(fillResultsRow(results[i], $toClone));
+	bindReturnPage($torrentSection.find('.back-btn'), returnPage);
+	
+	if (results && results.length) {
+		loopLength = (results.length < displayLength) ? results.length : displayLength;
+		for (var i = 0; i < loopLength; i++) {
+			$torrentsList.append(fillResultsRow(results[i], $toClone));
+		}
+	} else {
+		$torrentSection.find('.torrent-header').hide();
+		$torrentsList.html('<h1>No torrents found.<br>Sorry <3</h1>');
 	}
 
 	setLoadingState(false, $torrentSection);
