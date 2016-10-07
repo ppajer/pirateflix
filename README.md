@@ -9,9 +9,13 @@ PirateFlix is built on the following libraries:
 
 ## Features
 
+### Browse the latest and most popular movies
+
+PirateFlix allows you to conveniently check the most recently released movies right from the dashboard. Feeding on TMDB's huge media database, you can also query the most popular movies around the world, or if you just want to watch something, watch a random movie - Iiít's a great way to discover new things you didn't even think you like!
+
 ### Search movies and series
 
-Simply type the name of the movie or series you want to watch and PirateFlix will fetch all media related to your search. Data returned includes the media's title, release year, director, writers, cast, genres and plot.
+Simply type the name of the movie or series you want to watch and PirateFlix will fetch all media related to your search. Data returned includes the media's title, release year, director, writers, cast, genres and plot. You can also search for different movies by members of a movie's cast or its director.
 
 ### Browse series seasons and episodes
 
@@ -27,4 +31,4 @@ PirateFlix will be updated with more features in the following weeks, including:
 - actor searches
 - genre searches
 - director searches
-- top movies
+- season playlists
