@@ -10,7 +10,17 @@ const MediaController 	= require('./media-controls.js');
 const smallImageBaseUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
 const largeImageBaseUrl = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2';
 
-var $searchForm 		= $('#main-search-form'),
+var $navToggle			= $('#btn-nav-toggle'),
+	$sidebarNav			= $('#sidebar-nav'),
+	$navSearch			= $('#sidebar-nav #btn-search'),
+	$navTop				= $('#sidebar-nav #btn-top'),
+	$navLatest			= $('#sidebar-nav #btn-latest'),
+	$navGenres			= $('#sidebar-nav #btn-genres'),
+	$navActors			= $('#sidebar-nav #btn-actors'),
+	$navFavourites		= $('#sidebar-nav #btn-favourites'),
+	$navPlayer 			= $('#sidebar-nav #btn-player'),
+	$navSettings		= $('#sidebar-nav #btn-settings'),
+	$searchForm 		= $('#main-search-form'),
 	$searchSubmit 		= $('#main-search-submit'),
 	$search 			= $('#main-search'),
 	$top 				= $('#top-rated-movies'),
@@ -38,6 +48,48 @@ setTimeout(function() {
 	$homeSection.addClass('active');
 	$search.focus();
 }, 200);
+
+/***************** NAV  ***********************/
+
+$navSearch.on('click', function(e) {
+	jumpToPage($homeSection);
+	$navToggle.trigger('click');
+});
+
+$navTop.on('click', function(e) {
+	getTopMovies();
+	$navToggle.trigger('click');
+});
+
+$navLatest.on('click', function(e) {
+	getLatestMovies();
+	$navToggle.trigger('click');
+});
+
+$navGenres.on('click', function(e) {
+	getMovieGenres();
+	$navToggle.trigger('click');
+});
+
+$navActors.on('click', function(e) {
+	getActorSearch();
+	$navToggle.trigger('click');
+});
+
+$navFavourites.on('click', function(e) {
+	getFavourites();
+	$navToggle.trigger('click');
+});
+
+$navPlayer.on('click', function(e) {
+	jumpToPage($playerSection);
+	$navToggle.trigger('click');
+});
+
+$navSettings.on('click', function(e) {
+	openSettings();
+	$navToggle.trigger('click');
+});
 
 /***************** HOME ***********************/
 
@@ -555,7 +607,7 @@ function fillResultsRow(result, $cloneElement) {
 
 */
 
-function streamResult(magnetLink, torrentName) {
+function streamResult(magnetLink, torrentName, nextInSeries) {
 
 	var torrentStream 	= PeerFlix(magnetLink),
 		streamServer 	= torrentStream.server;

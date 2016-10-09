@@ -28,6 +28,10 @@ section {
 	}
 }
 
+.btn-disabled {
+	text-decoration: line-through;
+}
+
 .control-btn {
 	background: transparent;
 	border: 0;
@@ -66,18 +70,8 @@ section {
 	}
 }
 
-.window-control-bar {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	z-index: 9999;
-}
-
 .window-control {
 	@extend .control-btn;
-	margin-top: 0.7em;
-	float: right;	
 }
 
 #loading {

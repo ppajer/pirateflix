@@ -12,16 +12,28 @@
     <script type="text/javascript" src="../assets/js/bootstrap.min.js"></script>
   </head>
   <body>
-    <div class="container-fluid">
-      <section id="controls">
-        <div class="row window-control-bar">
-          <button class="window-control" id="btn-window-close" title="Close"><i class="glyphicon glyphicon-remove"></i></button>
-          <button class="window-control" id="btn-window-minimize" title="Minimize Window"><i class="glyphicon glyphicon-resize-small"></i></button>
-          <button class="window-control" id="btn-window-fullscreen" title="Fullscreen"><i class="glyphicon glyphicon-resize-full"></i></button>
+
+    <nav id="sidebar-nav">
+      <div class="window-control-bar">
+          <button class="window-control" id="btn-nav-toggle" title="Open navigation"><i class="glyphicon glyphicon-menu-hamburger"></i></button>     
           <button class="window-control" id="btn-window-home" title="Go to Home"><i class="glyphicon glyphicon-home"></i></button>
-            
-            
-        </div>
+          <button class="window-control" id="btn-window-fullscreen" title="Fullscreen"><i class="glyphicon glyphicon-resize-full"></i></button>
+          <button class="window-control" id="btn-window-minimize" title="Minimize Window"><i class="glyphicon glyphicon-resize-small"></i></button>
+          <button class="window-control" id="btn-window-close" title="Close"><i class="glyphicon glyphicon-remove"></i></button>
+      </div>
+      <button class="control-btn btn-nav" id="btn-search"><i class="glyphicon glyphicon-search"></i> Search</button>
+      <button class="control-btn btn-nav" id="btn-top"><i class="glyphicon glyphicon-star"></i> Top Movies</button>
+      <button class="control-btn btn-nav" id="btn-latest"><i class="glyphicon glyphicon-facetime-video"></i> Latest Movies</button>
+      <button class="control-btn btn-nav btn-disabled" id="btn-genres"><i class="glyphicon glyphicon-tags"></i> Genres</button>
+      <button class="control-btn btn-nav btn-disabled" id="btn-actors"><i class="glyphicon glyphicon-user"></i> Actors</button>
+      <button class="control-btn btn-nav btn-disabled" id="btn-favourites"><i class="glyphicon glyphicon-heart"></i> Favourites</button>
+      <button class="control-btn btn-nav" id="btn-player"><i class="glyphicon glyphicon-play"></i> Player</button>
+      <button class="control-btn btn-nav btn-disabled" id="btn-search"><i class="glyphicon glyphicon-cog"></i> Settings</button>
+    </nav>
+    
+    <section id="controls">
+      <div class="container-fluid">
+        
       </div>
     </section>
 
@@ -304,5 +316,6 @@
   <script>
     require('../assets/js/renderer.js');
     require('../assets/js/window-controls.js');
+    require('../assets/js/nav-controller.js');
   </script>
 </html>
