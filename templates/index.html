@@ -24,18 +24,12 @@
       <button class="control-btn btn-nav" id="btn-search"><i class="glyphicon glyphicon-search"></i> Search</button>
       <button class="control-btn btn-nav" id="btn-top"><i class="glyphicon glyphicon-star"></i> Top Movies</button>
       <button class="control-btn btn-nav" id="btn-latest"><i class="glyphicon glyphicon-facetime-video"></i> Latest Movies</button>
-      <button class="control-btn btn-nav btn-disabled" id="btn-genres"><i class="glyphicon glyphicon-tags"></i> Genres</button>
-      <button class="control-btn btn-nav btn-disabled" id="btn-actors"><i class="glyphicon glyphicon-user"></i> Actors</button>
+      <button class="control-btn btn-nav" id="btn-genres"><i class="glyphicon glyphicon-tags"></i> Genres</button>
+      <button class="control-btn btn-nav" id="btn-actors"><i class="glyphicon glyphicon-user"></i> Actors</button>
       <button class="control-btn btn-nav btn-disabled" id="btn-favourites"><i class="glyphicon glyphicon-heart"></i> Favourites</button>
       <button class="control-btn btn-nav" id="btn-player"><i class="glyphicon glyphicon-play"></i> Player</button>
       <button class="control-btn btn-nav btn-disabled" id="btn-search"><i class="glyphicon glyphicon-cog"></i> Settings</button>
     </nav>
-    
-    <section id="controls">
-      <div class="container-fluid">
-        
-      </div>
-    </section>
 
     <section id="home">
       <div class="container-fluid">
@@ -187,6 +181,79 @@
                   </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="genres">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12">
+            <h1>
+              <i class="glyphicon glyphicon-tags"></i> Movies by genre
+            </h1>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <div id="genre-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="actors">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12">
+            <button class="control-btn back-btn" title="Back">
+              <i class="glyphicon glyphicon-chevron-left"></i>
+            </button>
+            <form id="actor-search">
+              <input type="text" name="name" id="actor-search-input" placeholder="Search actors">
+              <button class="control-btn"><i class="glyphicon glyphicon-chevron-right"></i></button>
+            </form>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <div id="actors-list" class="row">
+              <div class="actor">
+                <img class="actor-profile">
+                <h4 class="actor-name"></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="actor-info">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-5">
+            <img src="" class="actor-profile">
+          </div>
+          <div class="col-xs-7">
+            <div class="row">
+              <div class="col-xs-3"></div>
+            </div>
+            <h1 class="actor-heading">
+              <button class="control-btn back-btn" title="Back">
+                <i class="glyphicon glyphicon-chevron-left"></i>
+              </button>
+              <span class="actor-name"></span>
+              <small class="actor-lived">
+                <span class="actor-born"></span> - <span class="actor-dead"></span>
+              </small>
+            </h1>
+            <hr>
+            <div class="actor-biography-holder">
+              <p class="movie-info-text actor-biography"></p>
+            </div>
+            <hr>
+            <button id="actor-credits-find" class="control-btn">View movies by <span class="actor-name"></span> <i class="glyphicon glyphicon-chevron-right"></i></button>
           </div>
         </div>
       </div>

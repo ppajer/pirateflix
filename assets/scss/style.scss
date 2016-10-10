@@ -5,6 +5,7 @@ html, body {
 	overflow: hidden;
 	font-family: 'Raleway';
 	font-weight: 300;
+	background: #fff;
 }
 
 h1, h2, h3, h4 {
@@ -15,6 +16,7 @@ h1, h2, h3, h4 {
 
 section {
 	opacity: 0;
+	background: #fff;
 	position: absolute;
 	left: 9999px;
 	top: 0;
@@ -159,7 +161,8 @@ section {
 
 #movie-info,
 #series-info,
-#season-info {
+#season-info,
+#actor-info {
 
 	.container-fluid {
 		padding-left: 0;
@@ -167,14 +170,16 @@ section {
 
 	.movie-poster,
 	.series-poster,
-	.season-poster {
+	.season-poster,
+	.actor-profile {
 		width: 100%;
 		display: block;
 	}
 
 	.movie-heading,
 	.series-heading,
-	.season-heading {
+	.season-heading,
+	.actor-heading {
 		font-size: 4em;
 		max-width: 90%;
 		padding-left: 1.5em;
@@ -189,7 +194,8 @@ section {
 
 		.movie-year,
 		.series-year,
-		.season-year {
+		.season-year,
+		.actor-lived {
 			display: block;
 			margin: 0.3em 0;
 		}
@@ -203,14 +209,24 @@ section {
 	}
 
 	.series-plot,
-	.season-plot {
+	.season-plot,
+	.actor-biography-holder {
 		max-height: 15vh;
 		overflow-y:scroll;
 		width: 107%;
 		padding-right: 3em;
 	}
 
-	#movie-search-torrents {
+	.actor-biography-holder {
+		max-height: 50vh;
+	}
+
+	.actor-biography {
+		max-width: 35em;
+	}
+
+	#movie-search-torrents,
+	#actor-credits-find {
 		font-family: 'Roboto Slab';
 		font-weight: 700;
 		text-transform: uppercase;
@@ -273,7 +289,8 @@ section {
 	}
 }
 
-#movies {
+#movies,
+#actors {
 
 	.back-btn {
 		font-size:3em!important;
@@ -287,13 +304,24 @@ section {
 		margin-left: 2em;
 	}
 
-	#movies-list {
+	#movies-list,
+	#actors-list {
 		overflow-y: scroll;
 		height: 90vh;
 		width: 110%;
 	}
 
-	.movie {
+	.actor {
+		@include prefix(filter, grayscale(100%));
+		@include prefix(transition, all .3s ease);
+
+		&:hover {
+			@include prefix(filter, grayscale(0));
+		}
+	}
+
+	.movie,
+	.actor {
 
 		float: left;
 		position: relative;
@@ -307,9 +335,18 @@ section {
 		cursor: pointer;
 		-webkit-animation: fadeIn 0.6s;
 
-		.movie-poster {
+		.movie-poster,
+		.actor-profile {
 			display: block;
 			width: 100%;
+		}
+
+		.actor-name {
+			position: absolute;
+			bottom: 1em;
+			left: 0;
+			padding: 0.5em;
+			background: rgba(#fff, 0.8);
 		}
 
 		.movie-description-box {
@@ -330,6 +367,29 @@ section {
 	}
 }
 
+#actor-search {
+	font-family: 'Roboto Slab';
+	font-weight: 700;
+	display: block;
+	width: 100%;
+	text-align: left;
+	margin: 1.5em 0 1.5em 5em;
+
+	#actor-search-input {
+
+		width: 25%;
+		border: 0;
+		font-size: 2em;
+		text-transform: uppercase;
+
+		&:active,
+		&:focus {
+			outline: none;
+		}
+	}
+
+}
+
 .genre-list {
 	display: inline;
 	.genre-item {
@@ -347,6 +407,21 @@ section {
 		&:active {
 			background: rgba(0,0,0,1);
 		}
+	}
+}
+
+#genres {
+	
+	h1 {
+		margin-bottom: 1em;
+		margin-top: 1em;
+	}
+	.genre-item {
+		display: inline-block;
+		padding: 1.1em;
+		font-size: 1.8em;
+		font-family: 'Roboto Slab';
+		font-weight: 700;
 	}
 }
 
