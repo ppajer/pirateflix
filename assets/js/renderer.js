@@ -2,8 +2,14 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
+const FileSystem		= require('fs');
+const Temporary 		= require('temp').track();
 const ThePirateBay 		= require('thepiratebay');
 const PeerFlix			= require('peerflix');
+const WebTorrent 		= require('webtorrent');
+const WebTorrentClient 	= new WebTorrent({maxConns: 1000});
+const WCJS_Player		= require('wcjs-player');
+const WCJS_Prebuilt 	= require('wcjs-prebuilt');
 const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
 const MediaController 	= require('./media-controls.js');
 
@@ -754,6 +760,7 @@ function fillResultsRow(result, $cloneElement) {
 	// Set event handler for torrent
 	$play.on('click', function(e) {
 		setLoadingState(true);
+		//webTorrentStream($(this).data('magnet'));
 		streamResult($(this).data('magnet'), $(this).parent().parent().find('.torrent-name').text()); //something more elegant? Please
 	});
 
@@ -765,6 +772,86 @@ function fillResultsRow(result, $cloneElement) {
 	STREAMING
 
 */
+
+function webTorrentStream(magnetLink, torrentName, nextInSeries) {
+	
+	WebTorrentClient.add(magnetLink, function(torrent) {
+
+		var largestMedia = {};
+		
+		torrent.files.forEach(function(file) {
+			
+			var fileNameParts 	= file.name.split('.'),
+				lastPart 		= fileNameParts.length - 1,
+				fileExtension 	= fileNameParts[lastPart],
+				mediaExtensions = ['avi', 'mp4', 'm4a', 'wmv', 'webm', 'ogg', 'mkv'],
+				fileIsMedia		= (mediaExtensions.indexOf(fileExtension) !== -1);
+
+			if (!fileIsMedia) {
+				
+				return;
+			
+			} else {
+				
+				if (!largestMedia.file) {
+				
+					largestMedia = {
+									file: file,
+									ext: fileExtension
+								};
+				
+				} else {
+
+					if (largestMedia.file.length < file.length) {
+
+						largestMedia.file 	= file;
+						largestMedia.ext 	= fileExtension;
+					}
+				}
+			}
+		});
+
+		Temporary.open({prefix:'pirateflix_', suffix: '.'+largestMedia.ext}, function(err, info) {
+			if (err) {
+				console.log(err);
+			} else {
+
+				var fileDesc 		= info.fd,
+					filePath 		= info.path;
+
+				console.log(filePath);
+
+				largestMedia.file.getBuffer(function(err, buffer) {
+
+					if (err) {
+						console.log(err);
+					} else {
+
+						FileSystem.write(fileDesc, buffer);
+						FileSystem.close(fileDesc, function(err) {
+							
+							if (err) {
+								console.log(err);
+							} else {
+
+								var config = {
+										wcjs: WCJS_Prebuilt,
+										autoplay: true,
+										titleBar: "none"
+									},
+									WCJS = new WCJS_Player('#player'),
+									player = WCJS.addPlayer(config);
+
+								player.addPlaylist(filePath);
+								setLoadingState(false, $playerSection);
+							}
+						})
+					}
+				})
+			}
+		})
+	})
+}
 
 function streamResult(magnetLink, torrentName, nextInSeries) {
 
