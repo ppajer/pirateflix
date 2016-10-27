@@ -52,7 +52,8 @@ var $navToggle			= $('#btn-nav-toggle'),
 	$moviesList 		= $('#movies-list'),
 	$loadingSection 	= $('#loading'),
 	$loadingInfo		= $('#loading-info'),
-	$_currentPage;
+	$_currentPage,
+	VLCPlayer;
 
 // Ugly code for a beautiful init
 setTimeout(function() {
@@ -60,6 +61,7 @@ setTimeout(function() {
 	$homeSection.addClass('active');
 	$_currentPage = $homeSection;
 	$search.focus();
+	VLCPlayer = injectVLC('#player');
 }, 200);
 
 /***************** NAV  ***********************/
@@ -654,6 +656,7 @@ function fillSeasonInfo(seasonData, seriesName, returnPage) {
 	
 	bindReturnPage($seasonInfoSection.find('.back-btn'), returnPage);
 
+	$seasonInfoSection.find('.season-play').attr('data-play', seasonData.name);
 	$seasonInfoSection.find('.season-title').html(seasonData.name);
 	$seasonInfoSection.find('.season-year').html(seasonData.air_date ? seasonData.air_date.split('-')[0] : '');
 	$seasonInfoSection.find('.season-poster').attr('src', largeImageBaseUrl+seasonData.poster_path);
@@ -759,9 +762,9 @@ function fillResultsRow(result, $cloneElement) {
 
 	// Set event handler for torrent
 	$play.on('click', function(e) {
-		setLoadingState(true);
-		//webTorrentStream($(this).data('magnet'));
-		streamResult($(this).data('magnet'), $(this).parent().parent().find('.torrent-name').text()); //something more elegant? Please
+
+		webTorrentStream($(this).data('magnet'));
+		//streamResult($(this).data('magnet'), $(this).parent().parent().find('.torrent-name').text()); //something more elegant? Please
 	});
 
 	return $clone;
@@ -773,84 +776,62 @@ function fillResultsRow(result, $cloneElement) {
 
 */
 
+function findMediaIDs(files) {
+
+	var mediaIDs = [];
+
+	for (var i = 0; i < files.length; i++) {
+		
+		var fileNameParts 	= files[i].name.split('.'),
+			lastPart 		= fileNameParts.length - 1,
+			fileExtension 	= fileNameParts[lastPart],
+			mediaExtensions = ['avi', 'mp4', 'm4a', 'wmv', 'webm', 'ogg', 'mkv'],
+			fileIsMedia		= (mediaExtensions.indexOf(fileExtension) !== -1);
+
+		if (fileIsMedia) {
+
+			mediaIDs.push(i);
+		}
+	};
+
+	return mediaIDs;
+}
+
 function webTorrentStream(magnetLink, torrentName, nextInSeries) {
+	
+	setLoadingState(true);
 	
 	WebTorrentClient.add(magnetLink, function(torrent) {
 
-		var largestMedia = {};
-		
-		torrent.files.forEach(function(file) {
+		var files 	= torrent.files,
+			media 	= findMediaIDs(files),
+			server 	= torrent.createServer(),
+			port 	= '1337',
+			address = 'http://localhost:'+port+'/';
+
+		server.listen(port);
+
+		for (var i = 0; i < media.length; i++) {
+
+			console.log(address+media[i])
 			
-			var fileNameParts 	= file.name.split('.'),
-				lastPart 		= fileNameParts.length - 1,
-				fileExtension 	= fileNameParts[lastPart],
-				mediaExtensions = ['avi', 'mp4', 'm4a', 'wmv', 'webm', 'ogg', 'mkv'],
-				fileIsMedia		= (mediaExtensions.indexOf(fileExtension) !== -1);
+			VLCPlayer.addPlaylist(address+media[i]);
+		};
 
-			if (!fileIsMedia) {
-				
-				return;
-			
-			} else {
-				
-				if (!largestMedia.file) {
-				
-					largestMedia = {
-									file: file,
-									ext: fileExtension
-								};
-				
-				} else {
-
-					if (largestMedia.file.length < file.length) {
-
-						largestMedia.file 	= file;
-						largestMedia.ext 	= fileExtension;
-					}
-				}
-			}
-		});
-
-		Temporary.open({prefix:'pirateflix_', suffix: '.'+largestMedia.ext}, function(err, info) {
-			if (err) {
-				console.log(err);
-			} else {
-
-				var fileDesc 		= info.fd,
-					filePath 		= info.path;
-
-				console.log(filePath);
-
-				largestMedia.file.getBuffer(function(err, buffer) {
-
-					if (err) {
-						console.log(err);
-					} else {
-
-						FileSystem.write(fileDesc, buffer);
-						FileSystem.close(fileDesc, function(err) {
-							
-							if (err) {
-								console.log(err);
-							} else {
-
-								var config = {
-										wcjs: WCJS_Prebuilt,
-										autoplay: true,
-										titleBar: "none"
-									},
-									WCJS = new WCJS_Player('#player'),
-									player = WCJS.addPlayer(config);
-
-								player.addPlaylist(filePath);
-								setLoadingState(false, $playerSection);
-							}
-						})
-					}
-				})
-			}
-		})
+		setLoadingState(false, $playerSection);
 	})
+}
+
+function injectVLC(container) {
+	var config = {
+			wcjs: WCJS_Prebuilt,
+			autoplay: true,
+			titleBar: "none"
+		},
+		WCJS = new WCJS_Player(container),
+		player = WCJS.addPlayer(config);
+
+	return player;
 }
 
 function streamResult(magnetLink, torrentName, nextInSeries) {

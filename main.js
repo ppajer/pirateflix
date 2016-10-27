@@ -1,8 +1,9 @@
-const electron = require('electron')
+const electron      = require('electron');
+const path          = require('path');
 // Module to control application life.
-const app = electron.app
+const app           = electron.app;
 // Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
+const BrowserWindow = electron.BrowserWindow;
 // Path to templates folder
 const templatesPath = `file://${__dirname}/templates/`;
 
@@ -14,14 +15,21 @@ function getTemplate(template) {
   return templatesPath+template+'.html';
 }
 
+// Because of TPB's stupid DDoS protection
+process.env.THEPIRATEBAY_DEFAULT_ENDPOINT = 'https://ukpirate.click/';
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow;
 
 function createWindow () {
+  // Save us from latest webchimera.js windows specific fuckeruppery.
+  if (process.platform === "win32") {
+    process.env['VLC_PLUGIN_PATH'] = path.join(__dirname, 'node_modules/wcjs-prebuilt/bin/plugins');
+  };
   // Keep "traffic lights" controls on OS X
   if (process.platform !== 'darwin') {
-    mainWindow = new BrowserWindow({width: 1280, height: 720, frame: false, show: false})
+    mainWindow = new BrowserWindow({width: 1280, height: 720, frame: false, show: false});
   } else {
     mainWindow = new BrowserWindow({width: 1280, height: 720, titleBarStyle: 'hidden', show: false})
   }
