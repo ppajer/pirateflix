@@ -28,7 +28,7 @@
       <button class="control-btn btn-nav" id="btn-actors"><i class="glyphicon glyphicon-user"></i> Actors</button>
       <button class="control-btn btn-nav btn-disabled" id="btn-favourites"><i class="glyphicon glyphicon-heart"></i> Favourites</button>
       <button class="control-btn btn-nav" id="btn-player"><i class="glyphicon glyphicon-play"></i> Player</button>
-      <button class="control-btn btn-nav btn-disabled" id="btn-search"><i class="glyphicon glyphicon-cog"></i> Settings</button>
+      <button class="control-btn btn-nav" id="btn-settings"><i class="glyphicon glyphicon-cog"></i> Settings</button>
     </nav>
 
     <section id="home">
@@ -46,6 +46,64 @@
             <button class="control-btn" id="random-movie">Show me a random movie <i class="glyphicon glyphicon-chevron-right"></i>
               <small class="warning"><i class="glyphicon glyphicon-warning-sign"></i> Like, sometimes <i>really</i> random</small>
             </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12">
+            <button class="control-btn back-btn" title="Back">
+              <i class="glyphicon glyphicon-chevron-left"></i>
+            </button>
+            <h1>Application Settings</h1>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="settings-form">
+              <div class="row">
+                <div class="col-xs-3">
+                  <input type="checkbox" id="setting-autosearch" class="settings-input" style="float:right;margin-top:2em;">
+                </div>
+                <div class="col-xs-9">
+                  <h3 class="setting-name">
+                    Automatically select torrent
+                  </h3>
+                  <p class="setting-desc">
+                    Let PirateFlix decide on which torrent to download for your movie. This is useful if you're unfamiliar with how torrents work.
+                  </p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-xs-3">
+                  <input type="checkbox" id="setting-keeptorrents" class="settings-input" style="float:right;margin-top:2em;">
+                </div>
+                <div class="col-xs-9">
+                  <h3 class="setting-name">
+                    Keep downloaded torrents
+                  </h3>
+                  <p class="setting-desc">
+                    Keep a copy of movies and episodes you watch on your computer. This allows you to watch them again without having to re-download, but can fill up your storage device.
+                  </p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-xs-3">
+                  <input type="checkbox" id="setting-showadult" class="settings-input" style="float:right;margin-top:2em;">
+                </div>
+                <div class="col-xs-9">
+                  <h3 class="setting-name">
+                    Show adult content
+                  </h3>
+                  <p class="setting-desc">
+                    Untick this box to hide adult rated results. Useful for parental control.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

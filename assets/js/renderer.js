@@ -1,9 +1,5 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
-
 const FileSystem		= require('fs');
-const Temporary 		= require('temp').track();
+const ElectronApp 		= require('electron').remote.app;
 const ThePirateBay 		= require('thepiratebay');
 const PeerFlix			= require('peerflix');
 const WebTorrent 		= require('webtorrent');
@@ -11,7 +7,7 @@ const WebTorrentClient 	= new WebTorrent({maxConns: 1000});
 const WCJS_Player		= require('wcjs-player');
 const WCJS_Prebuilt 	= require('wcjs-prebuilt');
 const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
-const MediaController 	= require('./media-controls.js');
+const Settings 			= require('./settings.js');
 
 const smallImageBaseUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
 const largeImageBaseUrl = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2';
@@ -53,15 +49,43 @@ var $navToggle			= $('#btn-nav-toggle'),
 	$loadingSection 	= $('#loading'),
 	$loadingInfo		= $('#loading-info'),
 	$_currentPage,
-	VLCPlayer;
+	VLCPlayer,
+	ApplicationSettings;
 
 // Ugly code for a beautiful init
 setTimeout(function() {
+	
+	// Load initial UI
 	$controlSection.addClass('active');
 	$homeSection.addClass('active');
+
+	// Bind initial page
 	$_currentPage = $homeSection;
+
+	// Autofocus on search field for smooth experience
 	$search.focus();
+
+	// Initialize VLC instance
 	VLCPlayer = injectVLC('#player');
+
+	Settings.read('appSettings', function(settings) {
+
+		if (settings) {
+
+			ApplicationSettings = settings;
+
+		} else {
+
+			ApplicationSettings = {
+				autosearch		: true,
+				keeptorrents	: false,
+				showadult 		: false
+			}
+
+			Settings.write('appSettings', ApplicationSettings, function(){/*empteh*/});
+		}
+	})
+
 }, 200);
 
 /***************** NAV  ***********************/
@@ -110,6 +134,7 @@ $navPlayer.on('click', function(e) {
 
 $navSettings.on('click', function(e) {
 	openSettings($_currentPage);
+	console.log(ApplicationSettings);
 	$navToggle.trigger('click');
 	$_currentPage = $settingsSection;
 });
@@ -144,6 +169,31 @@ $top.on('click', function(e) {
 $latest.on('click', function(e) {
 	getLatestMovies($homeSection);
 });
+
+/******************* SETTINGS *********************/
+
+function openSettings(returnPage) {
+	setLoadingState(true);
+	bindReturnPage($settingsSection.find('.back-btn'), returnPage);
+	updateSettingsDisplay(ApplicationSettings);
+	setLoadingState(false, $settingsSection);
+}
+
+function updateSettingsDisplay(settings) {
+	for (key in settings) {
+		var $input 	= $settingsSection.find('#setting-'+key),
+			type 	= $input.attr('type');
+
+		if (type === 'checkbox') {
+
+			$input.prop('checked', settings[key]);
+
+		} else if (type === 'text' || type === 'file') {
+
+			$input.val(settings[key]);
+		}
+	}
+}
 
 /******************* MEDIA INFO *******************/
 
@@ -716,6 +766,8 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 
 function searchTorrents(toSearch) {
 
+	console.log(toSearch);
+
 	return ThePirateBay.search(toSearch, {
 		category: 'video',
 		page: 0,
@@ -725,7 +777,7 @@ function searchTorrents(toSearch) {
 }
 
 function buildResultsList(results, $toClone, returnPage) {
-	
+	console.log(results);
 	var displayLength = 10,
 		loopLength;
 
@@ -851,7 +903,6 @@ function streamResult(magnetLink, torrentName, nextInSeries) {
 
 		$mediaPlayer.attr('src', mediaUrl);
 		$mediaPlayer.focus();
-		MediaController.getController($mediaPlayer[0]);
 	})
 }
 

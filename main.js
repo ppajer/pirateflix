@@ -15,9 +15,6 @@ function getTemplate(template) {
   return templatesPath+template+'.html';
 }
 
-// Because of TPB's stupid DDoS protection
-process.env.THEPIRATEBAY_DEFAULT_ENDPOINT = 'https://ukpirate.click/';
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
