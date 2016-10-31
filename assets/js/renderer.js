@@ -1,7 +1,6 @@
 const FileSystem		= require('fs');
 const ElectronApp 		= require('electron').remote.app;
 const ThePirateBay 		= require('thepiratebay');
-const PeerFlix			= require('peerflix');
 const WebTorrent 		= require('webtorrent');
 const WebTorrentClient 	= new WebTorrent({maxConns: 1000});
 const WCJS_Player		= require('wcjs-player');
@@ -40,6 +39,7 @@ var $navToggle			= $('#btn-nav-toggle'),
 	$actorInfoSection 	= $('#actor-info'),
 	$favouritesSection	= $('#favourites'),
 	$settingsSection	= $('#settings'),
+	$settingsSubmit 	= $('#settings-submit'),
 	$searchTorrents 	= $('#movie-search-torrents'),
 	$torrentSection 	= $('#torrents'),
 	$playerSection 		= $('#player'),
@@ -170,7 +170,30 @@ $latest.on('click', function(e) {
 	getLatestMovies($homeSection);
 });
 
+
+
 /******************* SETTINGS *********************/
+
+
+$settingsSubmit.on('click', saveSettings);
+$settingsSection.find('input').on('change', function() {
+	if ($(this).attr('type') === 'checkbox') {
+
+		if ($(this).prop('checked')) {
+		
+			$(this).parent().parent().find('.setting-subsection').slideDown();
+		
+		} else {
+
+			$(this).parent().parent().find('.setting-subsection').slideUp();
+		}
+	}
+});
+$settingsSection.find('#btn-keeptorrentsdir').on('click', function(){
+	$settingsSection.find('#setting-keeptorrentsdirselect').trigger('click').on('change', function(){
+		$settingsSection.find('#setting-keeptorrentsdir').val($(this)[0].files[0].path);
+	})
+})
 
 function openSettings(returnPage) {
 	setLoadingState(true);
@@ -182,11 +205,24 @@ function openSettings(returnPage) {
 function updateSettingsDisplay(settings) {
 	for (key in settings) {
 		var $input 	= $settingsSection.find('#setting-'+key),
-			type 	= $input.attr('type');
+			type 	= $input.attr('type'),
+			$sub 	= (type === 'checkbox') ? $input.parent().parent().find('.setting-subsection') : false;
 
 		if (type === 'checkbox') {
 
 			$input.prop('checked', settings[key]);
+
+			if ($sub.length) {
+
+				if (settings[key]) {
+					
+					$sub.slideDown();
+
+				} else {
+					
+					$sub.slideUp();
+				}
+			};
 
 		} else if (type === 'text' || type === 'file') {
 
@@ -195,7 +231,29 @@ function updateSettingsDisplay(settings) {
 	}
 }
 
+function saveSettings() {
+
+	var $inputs = $settingsSection.find('input');
+	setLoadingState(true);
+
+	$inputs.each(function() {
+
+		var key 	= $(this).attr('id').replace('setting-', ''),
+			type 	= $(this).attr('type'),
+			value 	= (type === 'checkbox') ? $(this).prop('checked') : $(this).val();
+
+		ApplicationSettings[key] = value;
+
+		Settings.write('appSettings', ApplicationSettings, function(r) {
+			setLoadingState(false, $settingsSection);
+		})
+	})
+}
+
+
+
 /******************* MEDIA INFO *******************/
+
 
 $searchTorrents.on('click', function(e) {
 
@@ -227,11 +285,14 @@ $searchTorrents.on('click', function(e) {
 	});
 });
 
+
+
 /*
 
 	HELPERS
 
 */
+
 
 function setLoadingState(loading, $pageToLoad) {
 	if (loading) {
@@ -356,11 +417,14 @@ function setPageTitle($page, title) {
 	$page.find('h1').text(title);
 }
 
+
+
 /*
 
 	MENU ACTIONS
 
 */
+
 
 function getRandomMovie(returnPage) {
 	var randomId;
@@ -441,11 +505,14 @@ function searchForActor(query, returnPage) {
 	})
 }
 
+
+
 /*
 
 	ACTOR SEARCH
 
 */
+
 
 function buildActorList(actors, $toClone, title, returnPage) {
 	
@@ -521,11 +588,14 @@ function fillActorInfo(actor, returnPage) {
 	})
 }
 
+
+
 /*
 
 	MOVIE SELECT
 
 */
+
 
 function buildMediaList(media, $toClone, forceType, title, returnPage) {
 
@@ -559,11 +629,14 @@ function fillSeriesCard(series, $cloneElement, returnPage) {
 	return fillCard($cloneElement, series.name, series.first_air_date.split('-')[0], series.id, series.poster_path, '.movie', displaySeriesInfo, returnPage);
 }
 
+
+
 /*
 
 	MOVIE INFO
 
 */
+
 
 function displayMovieInfo(id, returnPage, randomId) {
 	var failed = false,
@@ -616,11 +689,14 @@ function fillMovieInfo(movieData, creditsData, returnPage) {
 	$searchTorrents.attr('data-movietitle', movieData.title+' '+movieData.release_date.split('-')[0]); // Identify by title+year for easy torrent search
 }
 
+
+
 /*
 	
 	SERIES INFO
 
 */
+
 
 function displaySeriesInfo(id, returnPage) {
 
@@ -681,11 +757,14 @@ function fillSeasonCard(series, seriesId, season, $cloneElement, returnPage) {
 	return $clone;
 }
 
+
+
 /*
 
 	SEASON INFO
 
 */
+
 
 function displaySeasonInfo(seriesName, id, number, returnPage) {
 	setLoadingState(true);
@@ -758,11 +837,14 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 	return $clone;
 }
 
+
+
 /*
 
 	TORRENT SELECT
 
 */
+
 
 function searchTorrents(toSearch) {
 
@@ -816,17 +898,19 @@ function fillResultsRow(result, $cloneElement) {
 	$play.on('click', function(e) {
 
 		webTorrentStream($(this).data('magnet'));
-		//streamResult($(this).data('magnet'), $(this).parent().parent().find('.torrent-name').text()); //something more elegant? Please
 	});
 
 	return $clone;
 }
+
+
 
 /*
 
 	STREAMING
 
 */
+
 
 function findMediaIDs(files) {
 
@@ -884,28 +968,4 @@ function injectVLC(container) {
 		player = WCJS.addPlayer(config);
 
 	return player;
-}
-
-function streamResult(magnetLink, torrentName, nextInSeries) {
-
-	var torrentStream 	= PeerFlix(magnetLink),
-		streamServer 	= torrentStream.server;
-
-	$_currentPage = $playerSection;
-
-	streamServer.on('listening', function() {
-
-		setLoadingState(false, $playerSection);
-
-		console.log(torrentStream, streamServer);
-
-		var mediaUrl = 'http://localhost:'+streamServer.address().port+'/';
-
-		$mediaPlayer.attr('src', mediaUrl);
-		$mediaPlayer.focus();
-	})
-}
-
-function awaitNextEpisode() {
-	
 }

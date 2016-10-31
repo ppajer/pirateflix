@@ -11,7 +11,7 @@ function readSetting(key, callback) {
 		
 		} else {
 			
-			if (res === {}) {
+			if (Object.keys(res).length === 0) {
 				
 				callback(false);
 

@@ -65,7 +65,7 @@
           <div class="col-xs-12">
             <div class="settings-form">
               <div class="row">
-                <div class="col-xs-3">
+                <div class="col-xs-1">
                   <input type="checkbox" id="setting-autosearch" class="settings-input" style="float:right;margin-top:2em;">
                 </div>
                 <div class="col-xs-9">
@@ -78,20 +78,34 @@
                 </div>
               </div>
               <div class="row">
-                <div class="col-xs-3">
+                <div class="col-xs-1">
                   <input type="checkbox" id="setting-keeptorrents" class="settings-input" style="float:right;margin-top:2em;">
                 </div>
                 <div class="col-xs-9">
                   <h3 class="setting-name">
-                    Keep downloaded torrents
+                    Keep downloaded media
                   </h3>
                   <p class="setting-desc">
                     Keep a copy of movies and episodes you watch on your computer. This allows you to watch them again without having to re-download, but can fill up your storage device.
                   </p>
+                  <div class="setting-subsection">
+                    <h4 class="subsetting-name">
+                      Media storage directory
+                    </h4>
+                    <div class="row">
+                      <div class="col-xs-2">
+                        <button id="btn-keeptorrentsdir" class="btn-default btn">Select directory <i class="fa fa-folder"></i></button>
+                      </div>
+                      <div class="col-xs-9">
+                        <input type="text" id="setting-keeptorrentsdir" class="settings-input form-control" disabled>
+                        <input type="file" id="setting-keeptorrentsdirselect" webkitdirectory style="display:none">
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="row">
-                <div class="col-xs-3">
+                <div class="col-xs-1">
                   <input type="checkbox" id="setting-showadult" class="settings-input" style="float:right;margin-top:2em;">
                 </div>
                 <div class="col-xs-9">
