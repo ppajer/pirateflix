@@ -34,6 +34,7 @@ var $navToggle			= $('#btn-nav-toggle'),
 	$movieInfoSection 	= $('#movie-info'),
 	$seriesInfoSection 	= $('#series-info'),
 	$seasonInfoSection 	= $('#season-info'),
+	$seasonPlayBtn 		= $('#season-play'),
 	$genresSection		= $('#genres'),
 	$actorsSection		= $('#actors'),
 	$actorInfoSection 	= $('#actor-info'),
@@ -224,7 +225,7 @@ function updateSettingsDisplay(settings) {
 				}
 			};
 
-		} else if (type === 'text' || type === 'file') {
+		} else if (type === 'text') {
 
 			$input.val(settings[key]);
 		}
@@ -245,6 +246,7 @@ function saveSettings() {
 		ApplicationSettings[key] = value;
 
 		Settings.write('appSettings', ApplicationSettings, function(r) {
+			updateSettingsDisplay(ApplicationSettings);
 			setLoadingState(false, $settingsSection);
 		})
 	})
@@ -255,15 +257,16 @@ function saveSettings() {
 /******************* MEDIA INFO *******************/
 
 
-$searchTorrents.on('click', function(e) {
+$searchTorrents.on('click', attemptTorrentSearch/*function(e) {
 
 	setLoadingState(true);
 
-	var $toClone = $('#torrents .torrent'),
-		toSearch = $searchTorrents.attr('data-movietitle');
+	var toSearch = $(this).attr('data-play');
 
 	searchTorrents(toSearch).then(function(results) {
-		buildResultsList(results, $toClone.first().clone(), $_currentPage);
+		
+		searchOrAutoplay(results, $_currentPage);
+
 	}).catch(function(err){
 		console.log('first try:',err);
 
@@ -271,7 +274,9 @@ $searchTorrents.on('click', function(e) {
 		setTimeout(function(){
 
 			searchTorrents(toSearch).then(function(results) {
-				buildResultsList(results, $toClone.first().clone(), $_currentPage);
+
+				searchOrAutoplay(results, $_currentPage);
+
 			}).catch(function(err){
 				console.log('retry:', err);
 
@@ -283,7 +288,9 @@ $searchTorrents.on('click', function(e) {
 			});
 		}, 3000);
 	});
-});
+}*/);
+
+$seasonPlayBtn.on('click', attemptTorrentSearch);
 
 
 
@@ -292,6 +299,40 @@ $searchTorrents.on('click', function(e) {
 	HELPERS
 
 */
+
+function attemptTorrentSearch() {
+
+	setLoadingState(true);
+
+	var toSearch = $(this).attr('data-play');
+
+	searchTorrents(toSearch).then(function(results) {
+		
+		searchOrAutoplay(results, $_currentPage);
+
+	}).catch(function(err){
+		console.log('first try:',err);
+
+		$loadingInfo.html('There seems to be a problem with The Pirate Bay, retrying...');
+		setTimeout(function(){
+
+			searchTorrents(toSearch).then(function(results) {
+
+				searchOrAutoplay(results, $_currentPage);
+				$loadingInfo.html('This may take a few seconds'); //reset
+
+			}).catch(function(err){
+				console.log('retry:', err);
+
+				$loadingInfo.html('The server seems to be down, try again in a few!<br>Cancelling search...');
+				setTimeout(function(){
+					setLoadingState(false, $_currentPage);
+					$loadingInfo.html('This may take a few seconds'); //reset
+				}, 2000);
+			});
+		}, 3000);
+	});
+}
 
 
 function setLoadingState(loading, $pageToLoad) {
@@ -686,7 +727,7 @@ function fillMovieInfo(movieData, creditsData, returnPage) {
 	$movieInfoSection.find('.movie-runtime').html(movieData.runtime);
 	$movieInfoSection.find('.movie-rating').html(movieData.vote_average);
 	$movieInfoSection.find('.movie-poster').attr('src', largeImageBaseUrl+movieData.poster_path);
-	$searchTorrents.attr('data-movietitle', movieData.title+' '+movieData.release_date.split('-')[0]); // Identify by title+year for easy torrent search
+	$searchTorrents.attr('data-play', movieData.title+' '+movieData.release_date.split('-')[0]); // Identify by title+year for easy torrent search
 }
 
 
@@ -785,7 +826,7 @@ function fillSeasonInfo(seasonData, seriesName, returnPage) {
 	
 	bindReturnPage($seasonInfoSection.find('.back-btn'), returnPage);
 
-	$seasonInfoSection.find('.season-play').attr('data-play', seasonData.name);
+	$seasonInfoSection.find('#season-play').attr('data-play', seasonData.name);
 	$seasonInfoSection.find('.season-title').html(seasonData.name);
 	$seasonInfoSection.find('.season-year').html(seasonData.air_date ? seasonData.air_date.split('-')[0] : '');
 	$seasonInfoSection.find('.season-poster').attr('src', largeImageBaseUrl+seasonData.poster_path);
@@ -804,7 +845,7 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 		},
 		$clone = cloneAndFill($toClone, cloneData, '.episode');
 
-	$clone.find('.episode-play').attr('data-search', seriesName+' S'+pad(seasonNumber, 2)+'E'+pad(episodeData.episode_number, 2));
+	/*$clone.find('.episode-play').attr('data-search', seriesName+' S'+pad(seasonNumber, 2)+'E'+pad(episodeData.episode_number, 2));
 	$clone.find('.episode-play').on('click', function(e) {
 		setLoadingState(true);
 
@@ -812,7 +853,9 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 			toSearch = $(this).attr('data-search');
 			console.log(toSearch);
 		searchTorrents(toSearch).then(function(results) {
-			buildResultsList(results, $toClone.clone(), $seasonInfoSection);
+
+			searchOrAutoplay(results, $toClone.clone(), $seasonInfoSection);
+
 		}).catch(function(err){
 			console.log('first try:',err);
 
@@ -820,7 +863,9 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 			setTimeout(function(){
 
 				searchTorrents(toSearch).then(function(results) {
-					buildResultsList(results, $toClone.clone(), $seasonInfoSection);
+					
+					searchOrAutoplay(results, $toClone.clone(), $seasonInfoSection);
+
 				}).catch(function(err){
 					console.log('retry:', err);
 
@@ -832,7 +877,7 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 				});
 			}, 3000);
 		});
-	});
+	});*/
 
 	return $clone;
 }
@@ -858,9 +903,10 @@ function searchTorrents(toSearch) {
 	})
 }
 
-function buildResultsList(results, $toClone, returnPage) {
+function buildResultsList(results, returnPage) {
 	console.log(results);
-	var displayLength = 10,
+	var $toClone = $('#torrents .torrent').first().clone(),
+		displayLength = 10,
 		loopLength;
 
 	$_currentPage = $torrentSection;
@@ -903,6 +949,18 @@ function fillResultsRow(result, $cloneElement) {
 	return $clone;
 }
 
+function searchOrAutoplay(results, returnPage) {
+
+	if (ApplicationSettings.autosearch) {
+
+		autoPlay(results);
+	
+	} else {
+
+		buildResultsList(results, returnPage);
+	}
+}
+
 
 
 /*
@@ -910,6 +968,51 @@ function fillResultsRow(result, $cloneElement) {
 	STREAMING
 
 */
+
+function getSizeInMBs(filesize) {
+
+	var conversionTable = {
+		'MiB' : 1,
+		'GiB' : 1024
+	};
+
+	for (unit in conversionTable) {
+
+		if (filesize.indexOf(unit) !== -1) {
+
+			filesize.replace(unit, '');
+			filesize = parseInt(filesize);
+			filesize = filesize * conversionTable[unit];
+			
+			console.log(filesize)
+			return filesize;
+		}
+	}
+}
+
+function autoPlay(results) {
+
+	var maxFileSize = ApplicationSettings.autosearchmaxsize || 0,
+		finalResult;
+
+	if ((!maxFileSize) || (maxFileSize === 0)) {
+
+		finalResult = results[0].magnetLink;
+	
+	} else {
+
+		for (var i = 0; i < results.length; i++) {
+			
+			if (getSizeInMBs(results[i].size) <= maxFileSize) {
+
+				finalResult = results[i].magnetLink;
+				break;
+			}
+		}
+	}
+
+	webTorrentStream(finalResult);
+}
 
 
 function findMediaIDs(files) {

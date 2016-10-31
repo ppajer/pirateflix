@@ -289,8 +289,17 @@ section {
 	}
 }
 
+#settings {
+
+	.setting-desc {
+
+		max-width: 35em;
+	}
+}
+
 #movies,
-#actors {
+#actors,
+#settings {
 
 	.back-btn {
 		font-size:3em!important;

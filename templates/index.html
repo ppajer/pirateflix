@@ -73,8 +73,20 @@
                     Automatically select torrent
                   </h3>
                   <p class="setting-desc">
-                    Let PirateFlix decide on which torrent to download for your movie. This is useful if you're unfamiliar with how torrents work.
+                    Let PirateFlix decide on which torrent to download for your movie. This is useful if you're unfamiliar with how torrents work. You can also limit the file size of the auto-selected torrent to avoid HD and UHD uploads if your connection or computer doesn't allow it.
                   </p>
+                  <div class="setting-subsection">
+                    <div>
+                      <h4 class="subsetting-name">
+                        Maximum file size in MB <small><i>(1GB = 1024MB)</i></small>
+                      </h4>
+                      <div class="row">
+                        <div class="col-xs-6">
+                          <input type="text" id="setting-autosearchmaxsize" class="form-control settings-input">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="row">
@@ -89,16 +101,18 @@
                     Keep a copy of movies and episodes you watch on your computer. This allows you to watch them again without having to re-download, but can fill up your storage device.
                   </p>
                   <div class="setting-subsection">
-                    <h4 class="subsetting-name">
-                      Media storage directory
-                    </h4>
-                    <div class="row">
-                      <div class="col-xs-2">
-                        <button id="btn-keeptorrentsdir" class="btn-default btn">Select directory <i class="fa fa-folder"></i></button>
-                      </div>
-                      <div class="col-xs-9">
-                        <input type="text" id="setting-keeptorrentsdir" class="settings-input form-control" disabled>
-                        <input type="file" id="setting-keeptorrentsdirselect" webkitdirectory style="display:none">
+                    <div>
+                      <h4 class="subsetting-name">
+                        Media storage directory
+                      </h4>
+                      <div class="row">
+                        <div class="col-xs-2">
+                          <button id="btn-keeptorrentsdir" class="btn-default btn">Select directory <i class="fa fa-folder"></i></button>
+                        </div>
+                        <div class="col-xs-4">
+                          <input type="text" id="setting-keeptorrentsdir" class="settings-input form-control" disabled>
+                          <input type="file" id="setting-keeptorrentsdirselect" webkitdirectory style="display:none">
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -118,6 +132,12 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-7">&nbsp;</div>
+          <div class="col-xs-3">
+            <button id="settings-submit" class="control-btn">Save Settings<i class="glyphicon glyphicon-chevron-right"></i></button>
           </div>
         </div>
       </div>
@@ -233,8 +253,8 @@
             </h1>
             <hr>
             <h3>Episodes</h3>
-            <button class="control-btn episode-play" title="Play episode">
-              Or play season <i class="glyphicon glyphicon-chevron-right"></i>
+            <button id="season-play" class="control-btn" title="Play season">
+              Play this season <i class="glyphicon glyphicon-chevron-right"></i>
             </button>
             <div id="season-episodes" class="container-fluid">
               <div class="season-episode row">
@@ -244,9 +264,9 @@
                       <h4 class="episode-title"></h4>
                     </div>
                     <div class="col-xs-3">
-                      <button class="control-btn episode-play" title="Play episode">
+                      <!--<button class="control-btn episode-play" title="Play episode">
                         <i class="glyphicon glyphicon-chevron-right"></i>
-                      </button>
+                      </button>-->
                     </div>
                   </div>
                   <div class="row">
