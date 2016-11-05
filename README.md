@@ -29,8 +29,8 @@ Simply type the name of the movie or series you want to watch and PirateFlix wil
 Once you have found the movie or series episode of your choice, PirateFlix automatically searches torrents for your media and starts streaming them right away. If you wish, you can select a different torrent for the given search if you don't like the first one for any reson. *Playback start may take from a few seconds up to a minute depending on your internet connection, media quality and availability.*
 
 > #### Important
-> Torrent searches are limited by the availability of ThePirateBay. If your searches fail repeatedly, check your internet connection and the online status of thepiratebay.se 
-> - if any of them are down, torrent searches are going to keep failing. Alternative torrent sources are currently being looked into as a fallback strategy to increase the reliability
+> Torrent searches are limited by the availability of ThePirateBay. If your searches fail repeatedly, check your internet connection and the online status of thepiratebay.se:
+> if any of them are down, torrent searches are going to keep failing. Alternative torrent sources are currently being looked into as a fallback strategy to increase the reliability
 > of torrent searches.
 
 ### Customize the way you watch movies
