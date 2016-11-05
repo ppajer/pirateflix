@@ -5,7 +5,8 @@ PirateFlix is a torrent streaming client for the desktop. It acts as a region-in
 PirateFlix is built on the following libraries:
 - **moviedb**: a node API for accessing TMDB data. Media information is fetched from here.
 - **thepiratebay**: a node API for thepiratebay.org. Torrents are fetched from here.
-- **peerflix**: a torrent streaming engine for node. 
+- **webtorrent**: a node based torrent client that allows lightning-fast file streaming
+- **webchimera.js**: everyone's favourite video player - VLC - in a javascript wrapper!
 
 ## Features
 
@@ -27,12 +28,19 @@ Simply type the name of the movie or series you want to watch and PirateFlix wil
 
 Once you have found the movie or series episode of your choice, PirateFlix automatically searches torrents for your media and starts streaming them right away. If you wish, you can select a different torrent for the given search if you don't like the first one for any reson. *Playback start may take from a few seconds up to a minute depending on your internet connection, media quality and availability.*
 
+> #### Important
+> Torrent searches are limited by the availability of ThePirateBay. If your searches fail repeatedly, check your internet connection and the online status of thepiratebay.se 
+> - if any of them are down, torrent searches are going to keep failing. Alternative torrent sources are currently being looked into as a fallback strategy to increase the reliability
+> of torrent searches.
+
+### Customize the way you watch movies
+
+Choose whether you want to decide on the torrent to use for each movie and series, or let PirateFlix handle the decision for you. You can set the maximum size of downloaded torrents, whether to keep them around after watching or not, and the display of adult content in your results.
+
 ## Roadmap
 
 PirateFlix will be updated with more features in the following weeks, including:
 
-- season playlists
-- AVI playback
-- stream transcoding
-- a better player
-- sexy looks
+- multilingual subtitles
+- a fallback strategy for when torrent providers are unavailable
+- keep track of your favourite shows

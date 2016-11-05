@@ -7,6 +7,7 @@ const WCJS_Player		= require('wcjs-player');
 const WCJS_Prebuilt 	= require('wcjs-prebuilt');
 const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
 const Settings 			= require('./settings.js');
+const Subtitles 		= require('./subtitles.js');
 
 const smallImageBaseUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
 const largeImageBaseUrl = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2';
@@ -257,38 +258,7 @@ function saveSettings() {
 /******************* MEDIA INFO *******************/
 
 
-$searchTorrents.on('click', attemptTorrentSearch/*function(e) {
-
-	setLoadingState(true);
-
-	var toSearch = $(this).attr('data-play');
-
-	searchTorrents(toSearch).then(function(results) {
-		
-		searchOrAutoplay(results, $_currentPage);
-
-	}).catch(function(err){
-		console.log('first try:',err);
-
-		$loadingInfo.html('There seems to be a problem with The Pirate Bay, retrying...');
-		setTimeout(function(){
-
-			searchTorrents(toSearch).then(function(results) {
-
-				searchOrAutoplay(results, $_currentPage);
-
-			}).catch(function(err){
-				console.log('retry:', err);
-
-				$loadingInfo.html('The server seems to be down, try again in a few!<br>Cancelling search...');
-				setTimeout(function(){
-					setLoadingState(false, $_currentPage);
-					$loadingInfo.html('This may take a few seconds');
-				}, 2000);
-			});
-		}, 3000);
-	});
-}*/);
+$searchTorrents.on('click', attemptTorrentSearch);
 
 $seasonPlayBtn.on('click', attemptTorrentSearch);
 
@@ -400,7 +370,6 @@ function listMediaGenres(genres) {
 						console.log(err);
 						MovieDB.genreTv
 					} else {
-						console.log(res);
 						buildMediaList(res.results, $('#movies .movie').first().clone(), 'movie');
 					};
 				})
@@ -472,7 +441,7 @@ function getRandomMovie(returnPage) {
 	setLoadingState(true);
 	// FYI: in case you ever want to extend, real max for series ids is 48988 (+1)
 	randomId = Math.round(Math.random() * (419770 - 1) + 1); //max incremented to include real max.
-	console.log(randomId)
+	
 	while (!displayMovieInfo(randomId, returnPage, true)) {
 		//recalc and hope for the best
 		randomId = Math.round(Math.random() * (419770 - 1) + 1);
@@ -485,7 +454,6 @@ function getTopMovies(returnPage) {
 		if (err) {
 			console.log(err);
 		} else {
-			console.log(res);
 			buildMediaList(res.results, $('#movies .movie').first().clone(), 'movie', 'Most Popular Movies', returnPage);
 		}
 	})
@@ -497,7 +465,6 @@ function getLatestMovies(returnPage) {
 		if (err) {
 			console.log(err);
 		} else {
-			console.log(res);
 			buildMediaList(res.results, $('#movies .movie').first().clone(), 'movie', 'Latest Movies', returnPage);
 		}
 	})
@@ -512,7 +479,6 @@ function getMovieGenres(returnPage) {
 		if (err) {
 			console.log(err);
 		} else {
-			console.log(res);
 			$('#genres #genre-list').html(listMediaGenres(res.genres));
 			setLoadingState(false, $genresSection);
 		}
@@ -558,8 +524,6 @@ function searchForActor(query, returnPage) {
 function buildActorList(actors, $toClone, title, returnPage) {
 	
 	var $list 	= $('#actors-list');
-
-	console.log(actors)
 	
 	$list.empty();
 	bindReturnPage($actorsSection.find('.back-btn'), returnPage);
@@ -592,7 +556,6 @@ function displayActorInfo(id, returnPage) {
 		if (err) {
 			console.log(err);
 		} else {
-			console.log(res);
 			fillActorInfo(res, returnPage);
 		}
 	})
@@ -822,12 +785,12 @@ function displaySeasonInfo(seriesName, id, number, returnPage) {
 
 function fillSeasonInfo(seasonData, seriesName, returnPage) {
 	var $episodesList 	= $seasonInfoSection.find('#season-episodes'),
-		$toClone 		= $episodesList.find('.season-episode').first().clone();
+		$toClone 		= $episodesList.find('.season-episode').first().clone(),
+		name 			= seriesName + ' Season ' + seasonData.season_number;
 	
 	bindReturnPage($seasonInfoSection.find('.back-btn'), returnPage);
-
-	$seasonInfoSection.find('#season-play').attr('data-play', seasonData.name);
-	$seasonInfoSection.find('.season-title').html(seasonData.name);
+	$seasonInfoSection.find('#season-play').attr('data-play', name);
+	$seasonInfoSection.find('.season-title').html(name);
 	$seasonInfoSection.find('.season-year').html(seasonData.air_date ? seasonData.air_date.split('-')[0] : '');
 	$seasonInfoSection.find('.season-poster').attr('src', largeImageBaseUrl+seasonData.poster_path);
 	$episodesList.empty();
@@ -845,40 +808,6 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 		},
 		$clone = cloneAndFill($toClone, cloneData, '.episode');
 
-	/*$clone.find('.episode-play').attr('data-search', seriesName+' S'+pad(seasonNumber, 2)+'E'+pad(episodeData.episode_number, 2));
-	$clone.find('.episode-play').on('click', function(e) {
-		setLoadingState(true);
-
-		var $toClone = $('#torrents .torrent').first(),
-			toSearch = $(this).attr('data-search');
-			console.log(toSearch);
-		searchTorrents(toSearch).then(function(results) {
-
-			searchOrAutoplay(results, $toClone.clone(), $seasonInfoSection);
-
-		}).catch(function(err){
-			console.log('first try:',err);
-
-			$loadingInfo.html('There seems to be a problem with The Pirate Bay, retrying...');
-			setTimeout(function(){
-
-				searchTorrents(toSearch).then(function(results) {
-					
-					searchOrAutoplay(results, $toClone.clone(), $seasonInfoSection);
-
-				}).catch(function(err){
-					console.log('retry:', err);
-
-					$loadingInfo.html('The server seems to be down, try again in a few!<br>Cancelling search...');
-					setTimeout(function(){
-						setLoadingState(false, $homeSection);
-						$loadingInfo.html('This may take a few seconds');
-					}, 2000);
-				});
-			}, 3000);
-		});
-	});*/
-
 	return $clone;
 }
 
@@ -893,8 +822,6 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 
 function searchTorrents(toSearch) {
 
-	console.log(toSearch);
-
 	return ThePirateBay.search(toSearch, {
 		category: 'video',
 		page: 0,
@@ -904,7 +831,7 @@ function searchTorrents(toSearch) {
 }
 
 function buildResultsList(results, returnPage) {
-	console.log(results);
+	
 	var $toClone = $('#torrents .torrent').first().clone(),
 		displayLength = 10,
 		loopLength;
@@ -984,7 +911,6 @@ function getSizeInMBs(filesize) {
 			filesize = parseInt(filesize);
 			filesize = filesize * conversionTable[unit];
 			
-			console.log(filesize)
 			return filesize;
 		}
 	}
@@ -1021,7 +947,8 @@ function findMediaIDs(files) {
 
 	for (var i = 0; i < files.length; i++) {
 		
-		var fileNameParts 	= files[i].name.split('.'),
+		var fileSize 		= files[i].length,
+			fileNameParts 	= files[i].name.split('.'),
 			lastPart 		= fileNameParts.length - 1,
 			fileExtension 	= fileNameParts[lastPart],
 			mediaExtensions = ['avi', 'mp4', 'm4a', 'wmv', 'webm', 'ogg', 'mkv'],
@@ -1029,7 +956,11 @@ function findMediaIDs(files) {
 
 		if (fileIsMedia) {
 
-			mediaIDs.push(i);
+			mediaIDs.push({
+				index: i,
+				name: files[i].name,
+				size: fileSize
+			});
 		}
 	};
 
@@ -1050,12 +981,31 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 
 		server.listen(port);
 
-		for (var i = 0; i < media.length; i++) {
+		media.forEach(function(mediaElement) {
 
-			console.log(address+media[i])
-			
-			VLCPlayer.addPlaylist(address+media[i]);
-		};
+			var mediaUrl 	= address+mediaElement.index,
+				fileSize 	= mediaElement.size,
+				languages 	= ['eng', 'hun', 'fre'];
+
+			VLCPlayer.addPlaylist({
+				url: address+mediaElement.index,
+				title: mediaElement.name
+			});
+
+			/*Subtitles.getSubtitles(mediaUrl, fileSize, languages.join(','), function(subtitlesLibrary) {
+
+				if (!subtitlesLibrary) {
+
+				} else {
+
+					VLCPlayer.addPlaylist({
+						url: address+media[i].index,
+						title: media[i].name,
+						subtitles: subtitlesLibrary
+					});
+				}
+			})*/
+		});
 
 		setLoadingState(false, $playerSection);
 	})
@@ -1069,6 +1019,7 @@ function injectVLC(container) {
 		},
 		WCJS = new WCJS_Player(container),
 		player = WCJS.addPlayer(config);
+		player.playlist(true);
 
 	return player;
 }
