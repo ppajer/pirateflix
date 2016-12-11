@@ -10,8 +10,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . pirateflix --platform win32 --arch x64 --out dist/ --asar=true",
-    "compile" : "electron-installer-windows --src dist/pirateflix-win32-x64 --dest dist/bin/"
+    "pack": "build --dir",
+    "dist": "build"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
     "stream",
     "desktop"
   ],
-  "homepage": "https://github.com/ppajer/pirateflix#reamde",
+  "homepage": "https://github.com/ppajer/pirateflix#readme",
   "dependencies" : {
     "electron-json-storage": "2.0.1",
     "opensubtitles-api": "3.3.0",
@@ -34,12 +34,15 @@
   },
   "devDependencies": {
     "electron": "^1.3.4",
-    "electron-installer-windows": "0.2.0",
-    "electron-packager": "8.0.0"
+    "electron-builder": "8.6.0"
   },
   "wcjs-prebuilt": {
     "runtime": "electron",
     "platform": "win",
     "arch": "x64"
+  },
+  "build": {
+    "appId": "pirateflix",
+    "productName": "PirateFlix"
   }
 }

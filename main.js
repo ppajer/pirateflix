@@ -7,6 +7,9 @@ const BrowserWindow = electron.BrowserWindow;
 // Path to templates folder
 const templatesPath = `file://${__dirname}/templates/`;
 
+// Set flag to determine environment vars
+const isProduction  = true;
+
 /*
     HELPERS
 */
@@ -20,9 +23,22 @@ function getTemplate(template) {
 let mainWindow;
 
 function createWindow () {
+
   // Save us from latest webchimera.js windows specific fuckeruppery.
-  if (process.platform === "win32") {
-    process.env['VLC_PLUGIN_PATH'] = path.join(__dirname, 'node_modules/wcjs-prebuilt/bin/plugins');
+  if (/^win/.test(process.platform)) {
+
+    // shapeshifting fuckeruppery!
+    if (isProduction) {
+
+      var pluginPath = path.join(__dirname, '../app.asar.unpacked/node_modules/wcjs-prebuilt/bin/plugins');
+
+    } else {
+
+      var pluginPath = path.join(__dirname, 'node_modules/wcjs-prebuilt/bin/plugins');
+    }
+
+    process.env['VLC_PLUGIN_PATH'] = pluginPath;
+
   };
   // Keep "traffic lights" controls on OS X
   if (process.platform !== 'darwin') {
@@ -36,6 +52,7 @@ function createWindow () {
   // Show after DOM is loaded to avoid ugliness
   mainWindow.on('ready-to-show', function() {
     mainWindow.show();
+    mainWindow.webContents.openDevTools();
   })
 
   // Emitted when the window is closed.

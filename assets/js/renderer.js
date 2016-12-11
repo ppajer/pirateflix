@@ -1,10 +1,23 @@
+const isProduction 		= true;
+
+var BinPath;
+
+if (isProduction) {
+
+	BinPath = require('path').join(__dirname, '../../../app.asar.unpacked/node_modules/wcjs-prebuilt/bin/WebChimera.js.node');
+
+} else {
+
+	BinPath = 'wcjs-prebuilt';
+}
+
 const FileSystem		= require('fs');
 const ElectronApp 		= require('electron').remote.app;
 const ThePirateBay 		= require('thepiratebay');
 const WebTorrent 		= require('webtorrent');
 const WebTorrentClient 	= new WebTorrent({maxConns: 1000});
 const WCJS_Player		= require('wcjs-player');
-const WCJS_Prebuilt 	= require('wcjs-prebuilt');
+const WCJS_Prebuilt 	= require(BinPath);
 const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
 const Settings 			= require('./settings.js');
 const Subtitles 		= require('./subtitles.js');
@@ -987,24 +1000,31 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 				fileSize 	= mediaElement.size,
 				languages 	= ['eng', 'hun', 'fre'];
 
-			VLCPlayer.addPlaylist({
-				url: address+mediaElement.index,
-				title: mediaElement.name
-			});
+			var subtitlesWorkingProbably = false;
 
-			/*Subtitles.getSubtitles(mediaUrl, fileSize, languages.join(','), function(subtitlesLibrary) {
+			if (!subtitlesWorkingProbably) {
+				VLCPlayer.addPlaylist({
+					url: address+mediaElement.index,
+					title: mediaElement.name
+				});
+			} else {
+				Subtitles.getSubtitles(mediaElement.name, fileSize, languages.join(','), function(subtitlesLibrary) {
 
-				if (!subtitlesLibrary) {
+					console.log(subtitlesLibrary)
 
-				} else {
+					if (!subtitlesLibrary) {
 
-					VLCPlayer.addPlaylist({
-						url: address+media[i].index,
-						title: media[i].name,
-						subtitles: subtitlesLibrary
-					});
-				}
-			})*/
+					} else {
+
+						VLCPlayer.addPlaylist({
+							url: address+mediaElement.index,
+							title: mediaElement.name,
+							subtitles: subtitlesLibrary
+						});
+						VLCPlayer.subtitles(true);
+					}
+				})
+			}
 		});
 
 		setLoadingState(false, $playerSection);
