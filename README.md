@@ -1,8 +1,13 @@
-# PirateFlix - 
+# PirateFlix - Stream movies on your desktop!
 
-## Userland notes
+## User notes
 
-PirateFlix is a torrent streaming client for the desktop. It acts as a region-independent and free alternative to NetFlix for those who want to binge watch their favourite movies without being born in the right country or forking over precious cash.
+> ### Alpha version
+> Currently, PirateFlix is in Alpha. Once a stable Beta release is available, executable files will be available for downoad. Until then, the software changes too rapidly to provide 
+> installers for every minor version, so only the source files are available for download. Check the [developer notes](#development-notes) for instructions on building the app from source 
+> if you want to use it before Beta.
+
+PirateFlix is a torrent streaming client for the desktop. It acts as a region-independent and free alternative to NetFlix for those who want to binge watch their favourite movies without being born in the right country or forking over precious cash. PirateFlix is designed with an open-source philosophy from the ground up, meaning that everything in it is built, maintained and editable by the community, including the movie database behind it, the media files and the source code itself.
 
 PirateFlix is built on the following libraries:
 - **moviedb**: a node API for accessing TMDB data. Media information is fetched from here.
@@ -49,7 +54,7 @@ PirateFlix will be updated with more features in the following weeks, including:
 
 ## Development notes
 
-The build process is handled by NPM and the electron-builder package. To compile the application, download this repository, run `npm install` against it, then `npm start` to launch in development mode. To package and compile the app into an executable, run `npm run-script pack` or `npm run-script dist` respectively.
+The build process is handled by NPM and the electron-builder package. To use the application, download this repository, run `npm install` against it, then `npm start` to launch in development mode. To package and compile the app into an executable, run `npm run-script pack` or `npm run-script dist` respectively. Currently only NSIS installers are supported by default, but you can add any installer support to it and make a pull request if you want.
 
 > #### Important note for win32
 > Due to the limitations of file path lengths on win32, asar packaging needs to be enabled when building for this platform. This however doesn't play well with embedded binaries, so when 
