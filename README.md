@@ -9,12 +9,6 @@
 
 PirateFlix is a torrent streaming client for the desktop. It acts as a region-independent and free alternative to NetFlix for those who want to binge watch their favourite movies without being born in the right country or forking over precious cash. PirateFlix is designed with an open-source philosophy from the ground up, meaning that everything in it is built, maintained and editable by the community, including the movie database behind it, the media files and the source code itself.
 
-PirateFlix is built on the following libraries:
-- **moviedb**: a node API for accessing TMDB data. Media information is fetched from here.
-- **thepiratebay**: a node API for thepiratebay.org. Torrents are fetched from here.
-- **webtorrent**: a node based torrent client that allows lightning-fast file streaming
-- **webchimera.js**: everyone's favourite video player - VLC - in a javascript wrapper!
-
 ### Features
 
 #### Browse the latest and most popular movies
@@ -48,7 +42,7 @@ Choose whether you want to decide on the torrent to use for each movie and serie
 
 PirateFlix will be updated with more features in the following weeks, including:
 
-- multilingual subtitles
+- search subtitles
 - a fallback strategy for when torrent providers are unavailable
 - keep track of your favourite shows
 
