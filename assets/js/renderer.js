@@ -1003,17 +1003,17 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 		WebTorrentServer = torrent.createServer();
 		WebTorrentServer.listen(port);
 
-		media.forEach(function(mediaElement) {
+		VLCPlayer = injectVLC('#player');
+
+		media.sort().forEach(function(mediaElement) {
 
 			var mediaUrl 	= address+mediaElement.index,
-				fileSize 	= mediaElement.size,
-				languages 	= ['eng', 'hun', 'fre'];
+				fileSize 	= mediaElement.size;
 
 			var subtitlesWorkingProbably = false;
 
 			if (!subtitlesWorkingProbably) {
 
-				VLCPlayer = injectVLC('#player');
 				VLCPlayer.addPlaylist({
 					url: address+mediaElement.index,
 					title: mediaElement.name
