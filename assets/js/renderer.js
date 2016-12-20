@@ -15,12 +15,12 @@ const FileSystem		= require('fs');
 const ElectronApp 		= require('electron').remote.app;
 const ThePirateBay 		= require('thepiratebay');
 const WebTorrent 		= require('webtorrent');
-const WebTorrentClient 	= new WebTorrent({maxConns: 1000});
 const WCJS_Player		= require('wcjs-player');
 const WCJS_Prebuilt 	= require(BinPath);
 const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
 const Settings 			= require('./settings.js');
 const Subtitles 		= require('./subtitles.js');
+const Keybindings 		= require('wcjs-keybindings');
 
 const smallImageBaseUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
 const largeImageBaseUrl = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2';
@@ -64,10 +64,11 @@ var $navToggle			= $('#btn-nav-toggle'),
 	$loadingSection 	= $('#loading'),
 	$loadingInfo		= $('#loading-info'),
 	$_currentPage,
+	WebTorrentClient,
+	WebTorrentServer,
 	VLCPlayer,
 	ApplicationSettings;
 
-// Ugly code for a beautiful init
 setTimeout(function() {
 	
 	// Load initial UI
@@ -79,9 +80,6 @@ setTimeout(function() {
 
 	// Autofocus on search field for smooth experience
 	$search.focus();
-
-	// Initialize VLC instance
-	VLCPlayer = injectVLC('#player');
 
 	Settings.read('appSettings', function(settings) {
 
@@ -271,9 +269,9 @@ function saveSettings() {
 /******************* MEDIA INFO *******************/
 
 
-$searchTorrents.on('click', attemptTorrentSearch);
+$searchTorrents.on('click', doTorrentSearch);
 
-$seasonPlayBtn.on('click', attemptTorrentSearch);
+$seasonPlayBtn.on('click', doTorrentSearch);
 
 
 
@@ -283,7 +281,7 @@ $seasonPlayBtn.on('click', attemptTorrentSearch);
 
 */
 
-function attemptTorrentSearch() {
+function doTorrentSearch() {
 
 	setLoadingState(true);
 
@@ -402,13 +400,13 @@ function getMediaCredits(credits) {
 		'writer': [],
 		'cast': []
 	};
-	if (credits.crew.length) {
+	if (credits.crew && credits.crew.length) {
 		credits.crew.forEach(function(c){
 			if (c.job === 'Director') creditsList.director.push(c.name);
 			if (c.job === 'Writer') creditsList.writer.push(c.name);
 		});
 	}
-	if (credits.cast.length) {
+	if (credits.cast && credits.cast.length) {
 		for (var i = 0; i < 5; i++) {
 			if (credits.cast[i] && credits.cast[i].name) creditsList.cast.push(credits.cast[i].name);
 		};
@@ -862,7 +860,7 @@ function buildResultsList(results, returnPage) {
 		}
 	} else {
 		$torrentSection.find('.torrent-header').hide();
-		$torrentsList.html('<h1>No torrents found.<br>Sorry <3</h1>');
+		$torrentsList.html('<h1>No torrents found.</h1>');
 	}
 
 	setLoadingState(false, $torrentSection);
@@ -981,18 +979,29 @@ function findMediaIDs(files) {
 }
 
 function webTorrentStream(magnetLink, torrentName, nextInSeries) {
+
+	WebTorrentClient = null;
+	
+	if (WebTorrentServer && WebTorrentServer.close) {
+
+		WebTorrentServer.close();
+	}
+
+	WebTorrentServer = null;
 	
 	setLoadingState(true);
+
+	WebTorrentClient = new WebTorrent({maxConns: 1000});
 	
 	WebTorrentClient.add(magnetLink, function(torrent) {
 
 		var files 	= torrent.files,
 			media 	= findMediaIDs(files),
-			server 	= torrent.createServer(),
 			port 	= '1337',
 			address = 'http://localhost:'+port+'/';
 
-		server.listen(port);
+		WebTorrentServer = torrent.createServer();
+		WebTorrentServer.listen(port);
 
 		media.forEach(function(mediaElement) {
 
@@ -1003,11 +1012,15 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 			var subtitlesWorkingProbably = false;
 
 			if (!subtitlesWorkingProbably) {
+
+				VLCPlayer = injectVLC('#player');
 				VLCPlayer.addPlaylist({
 					url: address+mediaElement.index,
 					title: mediaElement.name
 				});
+
 			} else {
+
 				Subtitles.getSubtitles(mediaElement.name, fileSize, languages.join(','), function(subtitlesLibrary) {
 
 					console.log(subtitlesLibrary)
@@ -1039,6 +1052,7 @@ function injectVLC(container) {
 		},
 		WCJS = new WCJS_Player(container),
 		player = WCJS.addPlayer(config);
+		Keybindings.getController(player);
 		player.playlist(true);
 
 	return player;

@@ -52,7 +52,7 @@ function createWindow () {
   // Show after DOM is loaded to avoid ugliness
   mainWindow.on('ready-to-show', function() {
     mainWindow.show();
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
   })
 
   // Emitted when the window is closed.
