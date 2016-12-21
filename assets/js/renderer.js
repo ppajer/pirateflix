@@ -1005,7 +1005,11 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 
 		VLCPlayer = injectVLC('#player');
 
-		media.sort().forEach(function(mediaElement) {
+		media.sort(function(a,b) {
+			if (a.name > b.name) return 1;
+			if (a.name < b.name) return -1;
+			return 0;
+		}).forEach(function(mediaElement) {
 
 			var mediaUrl 	= address+mediaElement.index,
 				fileSize 	= mediaElement.size;
