@@ -1,4 +1,4 @@
-const isProduction 		= true;
+const isProduction 		= false;
 
 var BinPath;
 
@@ -11,14 +11,21 @@ if (isProduction) {
 	BinPath = 'wcjs-prebuilt';
 }
 
-const FileSystem		= require('fs');
-const ElectronApp 		= require('electron').remote.app;
-const ThePirateBay 		= require('thepiratebay');
+const Modules = new require('node-modules-manager')([
+	'fs', 
+	'./settings.js'
+]);
+
+console.log(Modules);
+
+let ThePirateBay;
+
+const FileSystem		= Modules.getModule('fs');
 const WebTorrent 		= require('webtorrent');
 const WCJS_Player		= require('wcjs-player');
 const WCJS_Prebuilt 	= require(BinPath);
 const MovieDB 			= require('moviedb')('bca1b28150defdd6e20032c1cfcb36ae');
-const Settings 			= require('./settings.js');
+const Settings 			= Modules.getModule('./settings.js');
 const Subtitles 		= require('./subtitles.js');
 const Keybindings 		= require('wcjs-keybindings');
 
@@ -58,6 +65,7 @@ var $navToggle			= $('#btn-nav-toggle'),
 	$searchTorrents 	= $('#movie-search-torrents'),
 	$torrentSection 	= $('#torrents'),
 	$playerSection 		= $('#player'),
+	$playerExitBtn 		= $('#exitPlayer'),
 	$mediaPlayer		= $('#mediaPlayer'),
 	$torrentsList 		= $('#torrents-list'),
 	$moviesList 		= $('#movies-list'),
@@ -286,6 +294,8 @@ function doTorrentSearch() {
 	setLoadingState(true);
 
 	var toSearch = $(this).attr('data-play');
+
+	console.log(toSearch);
 
 	searchTorrents(toSearch).then(function(results) {
 		
@@ -817,7 +827,10 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 			'title': episodeData.name,
 			'plot': episodeData.overview
 		},
+		toSearch = seriesName.replace('The', '')+' '+'S'+pad(seasonNumber, 2)+'E'+pad(episodeData.episode_number, 2),
 		$clone = cloneAndFill($toClone, cloneData, '.episode');
+
+		$clone.find('.episode-play').attr('data-play', toSearch).on('click', doTorrentSearch);
 
 	return $clone;
 }
@@ -832,6 +845,8 @@ function fillEpisodeCard($toClone, episodeData, seasonNumber, seriesName) {
 
 
 function searchTorrents(toSearch) {
+
+	ThePirateBay = ThePirateBay || Modules.getModule('thepiratebay');
 
 	return ThePirateBay.search(toSearch, {
 		category: 'video',
@@ -860,7 +875,7 @@ function buildResultsList(results, returnPage) {
 		}
 	} else {
 		$torrentSection.find('.torrent-header').hide();
-		$torrentsList.html('<h1>No torrents found.</h1>');
+		$torrentsList.append('<h1>No torrents found.<br><small>The search returned no results or thepiratebay.org may be down.</small></h1>');
 	}
 
 	setLoadingState(false, $torrentSection);
@@ -906,6 +921,8 @@ function searchOrAutoplay(results, returnPage) {
 	STREAMING
 
 */
+
+$playerExitBtn.on('click', stopStreaming);
 
 function getSizeInMBs(filesize) {
 
@@ -979,19 +996,15 @@ function findMediaIDs(files) {
 }
 
 function webTorrentStream(magnetLink, torrentName, nextInSeries) {
-
-	WebTorrentClient = null;
-	
-	if (WebTorrentServer && WebTorrentServer.close) {
-
-		WebTorrentServer.close();
-	}
-
-	WebTorrentServer = null;
 	
 	setLoadingState(true);
 
-	WebTorrentClient = new WebTorrent({maxConns: 1000});
+	stopStreaming();
+
+	WebTorrentClient = new WebTorrent({
+							maxConns: 1000,
+							webSeeds: false
+						});
 	
 	WebTorrentClient.add(magnetLink, function(torrent) {
 
@@ -1003,7 +1016,7 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 		WebTorrentServer = torrent.createServer();
 		WebTorrentServer.listen(port);
 
-		VLCPlayer = injectVLC('#player');
+		VLCPlayer = injectVLC('#player-embed');
 
 		media.sort(function(a,b) {
 			if (a.name > b.name) return 1;
@@ -1042,10 +1055,32 @@ function webTorrentStream(magnetLink, torrentName, nextInSeries) {
 					}
 				})
 			}
+
+			VLCPlayer.playItem(0);
 		});
 
 		setLoadingState(false, $playerSection);
 	})
+}
+
+function stopStreaming() {
+
+	if (WebTorrentServer && typeof WebTorrentServer.close === 'function') {
+
+		WebTorrentServer.close();
+		WebTorrentServer = null;
+	}
+
+	if (WebTorrentClient && typeof WebTorrentClient.destroy === 'function') {
+
+		WebTorrentClient.destroy();
+		WebTorrentClient = null;
+	}
+
+	if (VLCPlayer) {
+
+		VLCPlayer = null;
+	}
 }
 
 function injectVLC(container) {

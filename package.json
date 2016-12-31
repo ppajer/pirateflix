@@ -24,6 +24,7 @@
   ],
   "homepage": "https://github.com/ppajer/pirateflix#readme",
   "dependencies" : {
+    "node-modules-manager": "1.2.0",
     "electron-json-storage": "2.0.1",
     "opensubtitles-api": "3.3.0",
     "thepiratebay": "1.2.0",

@@ -8,7 +8,7 @@ const BrowserWindow = electron.BrowserWindow;
 const templatesPath = `file://${__dirname}/templates/`;
 
 // Set flag to determine environment vars
-const isProduction  = true;
+const isProduction  = false;
 
 /*
     HELPERS

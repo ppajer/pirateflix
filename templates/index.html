@@ -264,9 +264,9 @@
                       <h4 class="episode-title"></h4>
                     </div>
                     <div class="col-xs-3">
-                      <!--<button class="control-btn episode-play" title="Play episode">
+                      <button class="control-btn episode-play" title="Play episode">
                         <i class="glyphicon glyphicon-chevron-right"></i>
-                      </button>-->
+                      </button>
                     </div>
                   </div>
                   <div class="row">
@@ -402,7 +402,12 @@
     </section>
 
     <section id="player">
-      <!--<video autoplay preload="true" controls id="mediaPlayer"></video>-->
+      <div id="player-embed"></div>
+      <div id="player-overlay">
+        <div class="overlay-container">
+          <button class="control-btn" id="exitPlayer"><i class="glyphicon glyphicon-stop"></i><br>Exit player</button>
+        </div>
+      </div>
     </section>
 
     <section id="next-episode">

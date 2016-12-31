@@ -406,15 +406,15 @@ section {
 		padding: 0.3em;
 		color: #fff;
 		cursor: pointer;
-		background: rgba(0,0,0,0.3);
+		background: rgba(#000,0.3);
 		@include prefix(transition, all .2s);
 
 		&:hover {
-			background: rgba(0,0,0,0.6);
+			background: rgba(#000,0.6);
 		}
 
 		&:active {
-			background: rgba(0,0,0,1);
+			background: rgba(#000,1);
 		}
 	}
 }
@@ -466,14 +466,36 @@ section {
 #player {
 	background: #000;
 	color: #fff;
+	position: relative;
 
-	#mediaPlayer {
+	#player-embed {
 		width: 100%;
-		height: 100vh;
+		height: 100%;
+	}
 
-		&:focus {
-			border: 0;
-			outline: none;
+	#player-overlay {
+		background: rgba(#000, 0.5);
+		position: fixed;
+		left: -10000px;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		@include prefix(transition, all .3s);
+
+		&.overlay-show {
+			left: 0;
+		}
+	}
+
+	.overlay-container {
+		width: 50%;
+		margin: 35vh auto;
+
+		.control-btn {
+
+			.glyphicon {
+				font-size: 3em;
+			}
 		}
 	}
 }
